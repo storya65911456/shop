@@ -1,5 +1,22 @@
 {
     "products": {
         "cart": "加入購物車"
+    },
+    "authFrom": {
+        "error": "請填寫所有欄位",
+        "email": "電子郵件",
+        "emailPlaceholder": "請輸入您的電子郵件",
+        "emailError": "請輸入有效的電子郵件",
+        "password": "密碼",
+        "passwordPlaceholder": "請輸入密碼，至少8個字符",
+        "passwordError": "請輸入有效的密碼，至少8個字符",
+        "button": {
+            "login": "登入",
+            "signin": "註冊"
+        },
+        "link": {
+            "login": "已經有帳號？立即登入",
+            "signin": "還沒有帳號？立即註冊"
+        }
     }
 }

@@ -1,5 +1,22 @@
 {
     "products": {
         "cart": "Add to Cart"
+    },
+    "authFrom": {
+        "error": "Please fill in all fields",
+        "email": "Email",
+        "emailPlaceholder": "Enter your email",
+        "emailError": "Please enter a valid email",
+        "password": "Password",
+        "passwordPlaceholder": "Enter your password, must be at least 8 characters",
+        "passwordError": "Please enter a valid password, must be at least 8 characters",
+        "button": {
+            "login": "Login",
+            "signin": "Sign in"
+        },
+        "link": {
+            "login": "Already have an account? Login now",
+            "signin": "Don't have an account? Sign up now"
+        }
     }
 }

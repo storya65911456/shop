@@ -9,3 +9,8 @@ const dictionaries = {
 } as const;
 
 export const getDictionary = async (locale: Locale) => dictionaries[locale]();
+export interface Dictionary {
+    products: {
+        cart: string;
+    };
+}

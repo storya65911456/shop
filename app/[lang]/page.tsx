@@ -1,16 +1,10 @@
-import type { Locale } from '@/lib/dictionaries';
-import { getDictionary } from '@/lib/dictionaries';
+import type { Locale } from '@/locales/dictionaries';
+import { Dictionary, getDictionary } from '@/locales/dictionaries';
 
 interface PageProps {
     params: Promise<{
         lang: Locale;
     }>;
-}
-
-interface Dictionary {
-    products: {
-        cart: string;
-    };
 }
 
 export default async function Page({ params }: PageProps) {

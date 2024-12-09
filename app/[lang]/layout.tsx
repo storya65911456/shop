@@ -1,4 +1,4 @@
-import type { Locale } from '@/lib/dictionaries';
+import type { Locale } from '@/locales/dictionaries';
 import type { ReactNode } from 'react';
 
 interface RootLayoutProps {

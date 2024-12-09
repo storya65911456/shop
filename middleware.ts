@@ -1,4 +1,4 @@
-import type { Locale } from '@/lib/dictionaries';
+import type { Locale } from '@/locales/dictionaries';
 import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
 
@@ -21,7 +21,7 @@ function getLocale(request: NextRequest): Locale {
     }
 
     // 預設語言
-    return 'en';
+    return 'zh-TW';
 }
 
 export function middleware(request: NextRequest) {

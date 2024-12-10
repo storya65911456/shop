@@ -1,13 +1,14 @@
 'use client';
 
-import { Locale } from '@/locales/dictionaries';
+import { Dictionary, Locale } from '@/lib/dictionaries';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 
 interface HeaderProps {
     lang: Locale;
+    dict: Dictionary;
 }
 
-export const Header = ({ lang }: HeaderProps) => {
+export const Header = ({ lang, dict }: HeaderProps) => {
     const router = useRouter();
     const pathname = usePathname();
     const searchParams = useSearchParams();
@@ -33,7 +34,13 @@ export const Header = ({ lang }: HeaderProps) => {
     };
 
     return (
-        <header className='p-4 flex justify-end border-b'>
+        <header className='p-4 flex justify-between border-b'>
+            <button
+                className='text-blue-500 hover:text-blue-700 bg-white p-2 rounded-md'
+                onClick={router.back}
+            >
+                {dict.authFrom.button.back}
+            </button>
             <button
                 className='text-blue-500 hover:text-blue-700 bg-white p-2 rounded-md'
                 onClick={handleLanguageChange}

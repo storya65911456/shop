@@ -1,4 +1,4 @@
-import type { Locale } from '@/locales/dictionaries';
+import type { Locale } from '@/lib/dictionaries';
 import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
 
@@ -41,7 +41,7 @@ export function middleware(request: NextRequest) {
 
 export const config = {
     matcher: [
-        // 跳過所有內部路徑 (_next)
+        // 跳過所有內���路徑 (_next)
         '/((?!_next).*)'
     ]
 };

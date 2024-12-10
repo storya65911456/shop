@@ -7,12 +7,17 @@
         "email": "Email",
         "emailPlaceholder": "Enter your email",
         "emailError": "Please enter a valid email",
+        "emailUniqueError": "Email already exists",
+        "emailNotFound": "User not found",
         "password": "Password",
         "passwordPlaceholder": "Enter your password, must be at least 8 characters",
         "passwordError": "Please enter a valid password, must be at least 8 characters",
+        "passwordIncorrect": "Password is incorrect",
         "button": {
             "login": "Login",
-            "signin": "Sign in"
+            "signin": "Sign in",
+            "logout": "Logout",
+            "back": "Back"
         },
         "link": {
             "login": "Already have an account? Login now",

@@ -1,7 +1,7 @@
 'use client';
 
 import { authFormAction } from '@/actions/auth-from';
-import type { Dictionary, Locale } from '@/locales/dictionaries';
+import type { Dictionary, Locale } from '@/lib/dictionaries';
 import Link from 'next/link';
 import { useActionState } from 'react';
 

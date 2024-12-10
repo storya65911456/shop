@@ -1,6 +1,6 @@
 import { AuthForm } from '@/components/AuthFrom';
-import type { Locale } from '@/locales/dictionaries';
-import { Dictionary, getDictionary } from '@/locales/dictionaries';
+import type { Locale } from '@/lib/dictionaries';
+import { Dictionary, getDictionary } from '@/lib/dictionaries';
 
 interface PageProps {
     searchParams: Promise<{

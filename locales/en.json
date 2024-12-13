@@ -15,13 +15,30 @@
         "passwordIncorrect": "Password is incorrect",
         "button": {
             "login": "Login",
-            "signin": "Sign in",
-            "logout": "Logout",
-            "back": "Back"
+            "sign": "Sign Up"
         },
         "link": {
             "login": "Already have an account? Login now",
             "signin": "Don't have an account? Sign up now"
+        }
+    },
+    "header": {
+        "language": "English",
+        "languageDropdown": {
+            "zh-TW": "繁體中文",
+            "en": "English"
+        },
+        "button": {
+            "login": "Login",
+            "sign": "Sign Up",
+            "logout": "Logout",
+            "back": "Back",
+            "help": "Help Center",
+            "notification": "Notification",
+            "seller": "Seller Center",
+            "download": "Download",
+            "follow": "Follow us on",
+            "start": "Start Selling"
         }
     }
 }

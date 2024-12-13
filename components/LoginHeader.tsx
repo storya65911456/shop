@@ -39,7 +39,7 @@ export const Header = ({ lang, dict }: HeaderProps) => {
                 className='text-blue-500 hover:text-blue-700 bg-white p-2 rounded-md'
                 onClick={router.back}
             >
-                {dict.authFrom.button.back}
+                {dict.header.button.back}
             </button>
             <button
                 className='text-blue-500 hover:text-blue-700 bg-white p-2 rounded-md'

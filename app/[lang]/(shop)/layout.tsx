@@ -1,4 +1,4 @@
-import { MainHeader } from '@/components/MainHeader';
+import { MainHeader } from '@/components/MainHeader/MainHeader';
 import '@/css/globals.css';
 import { verifyAuth } from '@/lib/auth';
 import { getDictionary } from '@/lib/dictionaries';

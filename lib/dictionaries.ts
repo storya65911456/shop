@@ -17,13 +17,30 @@ export interface Dictionary {
         passwordIncorrect: string;
         button: {
             login: string;
-            signin: string;
-            logout: string;
-            back: string;
+            sign: string;
         };
         link: {
             login: string;
             signin: string;
+        };
+    };
+    header: {
+        language: string;
+        languageDropdown: {
+            'zh-TW': string;
+            en: string;
+        };
+        button: {
+            login: string;
+            sign: string;
+            logout: string;
+            back: string;
+            help: string;
+            notification: string;
+            seller: string;
+            download: string;
+            follow: string;
+            start: string;
         };
     };
 }

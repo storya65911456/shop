@@ -19,7 +19,7 @@
         },
         "link": {
             "login": "Already have an account? Login now",
-            "signin": "Don't have an account? Sign up now"
+            "sign": "Don't have an account? Sign up now"
         }
     },
     "header": {
@@ -28,6 +28,7 @@
             "zh-TW": "繁體中文",
             "en": "English"
         },
+        "searchPlaceholder": "Search products",
         "button": {
             "login": "Login",
             "sign": "Sign Up",
@@ -36,9 +37,12 @@
             "help": "Help Center",
             "notification": "Notification",
             "seller": "Seller Center",
-            "download": "Download",
-            "follow": "Follow us on",
-            "start": "Start Selling"
+            "follow": "Follow us on"
+        },
+        "account": {
+            "myAccount": "My Account",
+            "profile": "Profile",
+            "orders": "Orders"
         }
     }
 }

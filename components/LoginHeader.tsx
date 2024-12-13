@@ -2,13 +2,14 @@
 
 import { Dictionary, Locale } from '@/lib/dictionaries';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
+import { LanguageDropdown } from './LanguageDropdown';
 
-interface HeaderProps {
+interface LoginHeaderProps {
     lang: Locale;
     dict: Dictionary;
 }
 
-export const Header = ({ lang, dict }: HeaderProps) => {
+export const LoginHeader = ({ lang, dict }: LoginHeaderProps) => {
     const router = useRouter();
     const pathname = usePathname();
     const searchParams = useSearchParams();
@@ -41,12 +42,7 @@ export const Header = ({ lang, dict }: HeaderProps) => {
             >
                 {dict.header.button.back}
             </button>
-            <button
-                className='text-blue-500 hover:text-blue-700 bg-white p-2 rounded-md'
-                onClick={handleLanguageChange}
-            >
-                {lang === 'zh-TW' ? 'English' : '中文'}
-            </button>
+            <LanguageDropdown lang={lang} dict={dict} />
         </header>
     );
 };

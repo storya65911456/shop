@@ -21,7 +21,7 @@ export interface Dictionary {
         };
         link: {
             login: string;
-            signin: string;
+            sign: string;
         };
     };
     header: {
@@ -30,6 +30,7 @@ export interface Dictionary {
             'zh-TW': string;
             en: string;
         };
+        searchPlaceholder: string;
         button: {
             login: string;
             sign: string;
@@ -38,9 +39,12 @@ export interface Dictionary {
             help: string;
             notification: string;
             seller: string;
-            download: string;
             follow: string;
-            start: string;
+        };
+        account: {
+            myAccount: string;
+            profile: string;
+            orders: string;
         };
     };
 }

@@ -1,4 +1,4 @@
-
+'use server';
 
 import db from '@/db/db';
 import { BetterSqlite3Adapter } from '@lucia-auth/adapter-sqlite';

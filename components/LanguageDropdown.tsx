@@ -3,6 +3,7 @@
 import { Dictionary, Locale } from '@/lib/dictionaries';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { GrLanguage } from 'react-icons/gr';
+import { RiArrowDropDownLine } from 'react-icons/ri';
 
 interface LanguageDropdownProps {
     lang: Locale;
@@ -39,6 +40,7 @@ export const LanguageDropdown = ({ lang, dict }: LanguageDropdownProps) => {
                 <button className='flex items-center justify-center gap-1'>
                     <GrLanguage className='text-md' />
                     {dict.header.language}
+                    <RiArrowDropDownLine className='text-md' />
                 </button>
             </div>
             {/* Dropdown Menu */}

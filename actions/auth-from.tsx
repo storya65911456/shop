@@ -1,6 +1,6 @@
 'use server';
 
-import { createAuthSession, destroySession } from '@/lib/auth';
+import { createAuthSession, destroySession, verifyAuth } from '@/lib/auth';
 import { Dictionary } from '@/lib/dictionaries';
 import { hashUserPassword, verifyPassword } from '@/lib/hash';
 import { createUser, getUserByEmail, User } from '@/lib/user';
@@ -10,6 +10,9 @@ import { redirect } from 'next/navigation';
 interface SQLiteError extends Error {
     code?: string;
 }
+
+// 添加在文件開頭
+type AuthResponse = string | { success: boolean; redirect: string };
 
 //註冊
 export const signInAction = async (
@@ -58,7 +61,7 @@ export const loginAction = async (
     prevState: any,
     formData: FormData,
     dict: Dictionary
-) => {
+): Promise<AuthResponse> => {
     const email = formData.get('email');
     const password = formData.get('password');
 
@@ -90,11 +93,16 @@ export const loginAction = async (
         return dict.authFrom.passwordIncorrect;
     }
 
-    await createAuthSession(existingUser.id);
-    redirect('/training');
+    try {
+        await createAuthSession(existingUser.id);
+        return { success: true, redirect: '/' };
+    } catch (error) {
+        console.error('Login error:', error);
+        return dict.authFrom.error;
+    }
 };
 
-//切換語言
+//切換登入或註冊
 export const authFormAction = async (
     mode: string,
     prevState: any,
@@ -111,6 +119,11 @@ export const authFormAction = async (
 
 //登出
 export const logout = async () => {
-    await destroySession();
-    redirect('/');
+    try {
+        await destroySession();
+        return { success: true, redirect: '/' };
+    } catch (error) {
+        console.error('Logout error:', error);
+        return { success: false, error: '登出失敗' };
+    }
 };

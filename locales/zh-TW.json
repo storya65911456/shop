@@ -19,7 +19,7 @@
         },
         "link": {
             "login": "已經有帳號？立即登入",
-            "signin": "還沒有帳號？立即註冊"
+            "sign": "還沒有帳號？立即註冊"
         }
     },
     "header": {
@@ -28,6 +28,7 @@
             "zh-TW": "繁體中文",
             "en": "English"
         },
+        "searchPlaceholder": "搜尋商品",
         "button": {
             "login": "登入",
             "sign": "註冊",
@@ -36,9 +37,12 @@
             "help": "幫助中心",
             "notification": "通知",
             "seller": "賣家中心",
-            "download": "下載",
-            "follow": "追蹤我們",
-            "start": "開始隨拍即賣囉!"
+            "follow": "追蹤我們"
+        },
+        "account": {
+            "myAccount": "我的帳戶",
+            "profile": "個人資料",
+            "orders": "購買清單"
         }
     }
 }

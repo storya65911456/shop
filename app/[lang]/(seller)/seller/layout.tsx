@@ -1,4 +1,4 @@
-import { LoginHeader } from '@/components/LoginHeader';
+import { SellerHeader } from '@/components/SellerHeader';
 
 import '@/css/globals.css';
 import type { Locale } from '@/lib/dictionaries';
@@ -22,7 +22,7 @@ export default async ({ children, params }: RootLayoutProps) => {
     return (
         <html lang={lang}>
             <body>
-                <LoginHeader lang={lang} dict={dict} />
+                <SellerHeader lang={lang} dict={dict} />
                 {children}
             </body>
         </html>

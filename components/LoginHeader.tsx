@@ -35,7 +35,7 @@ export const LoginHeader = ({ lang, dict }: LoginHeaderProps) => {
     };
 
     return (
-        <header className='p-4 flex justify-between border-b'>
+        <header className='p-4 flex justify-between border-b bg-orange'>
             <button
                 className='text-blue-500 hover:text-blue-700 bg-white p-2 rounded-md'
                 onClick={router.back}

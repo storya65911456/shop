@@ -27,14 +27,16 @@ export const AuthForm = ({ dict, lang, mode }: AuthFormProps) => {
     }, [state, router]);
 
     return (
-        <div className='flex flex-row items-center justify-between h-screen overflow-auto whitespace-nowrap max-w-[70%] mx-auto'>
+        <div className='flex flex-row items-center justify-between h-[600px] overflow-auto whitespace-nowrap max-w-[70%] mx-auto '>
+            {/* 圖片 */}
             <div></div>
+            {/* 表單 */}
             <form
-                className='w-[400px] h-[516px] mt-8 p-6 bg-white/10 rounded-lg shadow-lg shadow-white/80 mr-5'
+                className='w-[400px] h-[450px] mt-8 p-6 bg-white rounded-lg shadow-lg shadow-gray-500/90 mr-5'
                 action={formAction}
             >
                 <div>
-                    <p className='text-center text-2xl font-bold'>
+                    <p className='text-center text-2xl font-extrabold text-black'>
                         {mode === 'login' && dict.authFrom.button.login}
                         {mode === 'signin' && dict.authFrom.button.sign}
                     </p>
@@ -50,7 +52,7 @@ export const AuthForm = ({ dict, lang, mode }: AuthFormProps) => {
                         type='email'
                         name='email'
                         placeholder={dict.authFrom.emailPlaceholder}
-                        className='w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500'
+                        className='w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange'
                     />
                 </div>
                 <div className='mb-4'>
@@ -64,7 +66,7 @@ export const AuthForm = ({ dict, lang, mode }: AuthFormProps) => {
                         type='password'
                         name='password'
                         placeholder={dict.authFrom.passwordPlaceholder}
-                        className='w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500'
+                        className='w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange'
                     />
                 </div>
                 <div className='mb-4'>
@@ -73,7 +75,7 @@ export const AuthForm = ({ dict, lang, mode }: AuthFormProps) => {
                     )}
                     <button
                         type='submit'
-                        className='w-full bg-blue-500 text-white font-bold py-2 px-4 rounded-md hover:bg-blue-600 transition-colors'
+                        className='w-full bg-orange text-white font-bold py-2 px-4 rounded-md hover:bg-[#f53d2d] transition-colors'
                     >
                         {mode === 'login' && dict.authFrom.button.login}
                         {mode === 'signin' && dict.authFrom.button.sign}
@@ -82,7 +84,7 @@ export const AuthForm = ({ dict, lang, mode }: AuthFormProps) => {
                 <div className='text-center'>
                     {mode === 'login' && (
                         <Link
-                            href={`/${lang}?mode=signin`}
+                            href={`/${lang}/login?mode=signin`}
                             className='text-blue-500 hover:text-blue-700 text-sm'
                         >
                             {dict.authFrom.link.sign}
@@ -90,7 +92,7 @@ export const AuthForm = ({ dict, lang, mode }: AuthFormProps) => {
                     )}
                     {mode === 'signin' && (
                         <Link
-                            href={`/${lang}?mode=login`}
+                            href={`/${lang}/login?mode=login`}
                             className='text-blue-500 hover:text-blue-700 text-sm'
                         >
                             {dict.authFrom.link.login}

@@ -1,5 +1,5 @@
+import { Footer } from '@/components/Footer';
 import { LoginHeader } from '@/components/LoginHeader';
-
 import '@/css/globals.css';
 import type { Locale } from '@/lib/dictionaries';
 import { getDictionary } from '@/lib/dictionaries';
@@ -24,6 +24,7 @@ export default async ({ children, params }: RootLayoutProps) => {
             <body>
                 <LoginHeader lang={lang} dict={dict} />
                 {children}
+                <Footer />
             </body>
         </html>
     );

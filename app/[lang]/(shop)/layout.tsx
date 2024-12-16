@@ -1,3 +1,4 @@
+import { Footer } from '@/components/Footer';
 import { MainHeader } from '@/components/MainHeader/MainHeader';
 import '@/css/globals.css';
 import { verifyAuth } from '@/lib/auth';
@@ -25,6 +26,7 @@ export default async ({ children, params }: ShopLayoutProps) => {
                     isAuthenticated={!!user}
                 />
                 {children}
+                <Footer />
             </body>
         </html>
     );

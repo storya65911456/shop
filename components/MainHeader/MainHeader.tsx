@@ -29,7 +29,7 @@ export const MainHeader = ({ lang, dict, isAuthenticated }: MainHeaderProps) => 
     // 根據輸入內容生成建議
 
     return (
-        <header className='bg-[#ee4d2d]'>
+        <header className='bg-orange'>
             {/* 上方導航欄 */}
             <div className='max-w-7xl mx-auto px-4 py-2 text-white text-sm'>
                 <div className='flex justify-between items-center'>
@@ -87,7 +87,7 @@ export const MainHeader = ({ lang, dict, isAuthenticated }: MainHeaderProps) => 
                                 }}
                                 onFocus={() => setShowSuggestions(true)}
                             />
-                            <button className='bg-[#ee4d2d] hover:bg-[#f53d2d] h-full transition-colors text-white px-6 py-2 mr-1 rounded flex items-center justify-center'>
+                            <button className='bg-orange hover:bg-[#f53d2d] h-full transition-colors text-white px-6 py-2 mr-1 rounded flex items-center justify-center'>
                                 <FaSearch className='text-xl' />
                             </button>
                         </div>

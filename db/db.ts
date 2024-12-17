@@ -14,7 +14,7 @@ interface Session {
 }
 
 // 建立資料庫連線
-const db: Database = sql('training.db');
+const db: Database = sql('shop.db');
 
 // 初始化資料表
 db.exec(`

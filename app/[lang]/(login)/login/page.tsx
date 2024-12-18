@@ -15,5 +15,13 @@ export default async function Page({ searchParams, params }: PageProps) {
     const { lang } = await params;
     const mode = (await searchParams).mode || 'login';
     const dict = await getDictionary(lang);
-    return <AuthForm dict={dict} lang={lang} mode={mode} />;
+    return (
+        <>
+            <AuthForm dict={dict} lang={lang} mode={mode} />
+            <h1>Sign in</h1>
+            <a href='/login/github'>Sign in with GitHub</a>
+            <br />
+            <a href='/login/google'>Sign in with Google</a>
+        </>
+    );
 }

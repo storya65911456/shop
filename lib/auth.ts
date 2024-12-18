@@ -1,5 +1,3 @@
-'use server';
-
 import db from '@/db/db';
 import { BetterSqlite3Adapter } from '@lucia-auth/adapter-sqlite';
 import { Lucia, Session, User } from 'lucia';
@@ -11,14 +9,30 @@ const adapter = new BetterSqlite3Adapter(db, {
     session: 'sessions' // Session 資料表
 });
 
-const lucia = new Lucia(adapter, {
+export const lucia = new Lucia(adapter, {
     sessionCookie: {
         expires: false,
         attributes: {
             secure: process.env.NODE_ENV === 'production'
         }
+    },
+    getUserAttributes: (attributes) => {
+        return { ...attributes };
     }
 });
+
+declare module 'lucia' {
+    interface Register {
+        Lucia: typeof lucia;
+        DatabaseUserAttributes: DatabaseUserAttributes;
+    }
+}
+
+interface DatabaseUserAttributes {
+    username: string;
+    github_id?: number;
+    google_id?: string;
+}
 
 // Session 驗證結果型別
 interface AuthResult {

@@ -1,6 +1,7 @@
 'use client';
 
 import { Dictionary, Locale } from '@/lib/dictionaries';
+import Link from 'next/link';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { LanguageDropdown } from './LanguageDropdown';
 
@@ -36,12 +37,9 @@ export const LoginHeader = ({ lang, dict }: LoginHeaderProps) => {
 
     return (
         <header className='p-4 flex justify-between border-b bg-orange'>
-            <button
-                className='text-blue-500 hover:text-blue-700 bg-white p-2 rounded-md'
-                onClick={router.back}
-            >
-                {dict.header.button.back}
-            </button>
+            <Link href={`/${lang}`} className='text-white text-2xl font-bold'>
+                LOGO
+            </Link>
             <LanguageDropdown lang={lang} dict={dict} />
         </header>
     );

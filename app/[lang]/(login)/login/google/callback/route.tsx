@@ -1,5 +1,10 @@
 import db from '@/db/db';
-import { lucia } from '@/lib/auth';
+import {
+    createAuthSession,
+    createUser,
+    findUserByEmail,
+    findUserByGoogleId
+} from '@/lib/auth';
 import { google } from '@/lib/google';
 import { OAuth2RequestError } from 'arctic';
 import { generateIdFromEntropySize } from 'lucia';
@@ -49,7 +54,40 @@ export async function GET(request: Request): Promise<Response> {
         }
 
         const googleUser: GoogleUser = await googleUserResponse.json();
-        console.log('Google user:', googleUser);
+
+        let userId: string | undefined;
+        let existingUser = await findUserByGoogleId(googleUser.sub);
+
+        if (!existingUser && googleUser.email) {
+            existingUser = await findUserByEmail(googleUser.email);
+        }
+
+        if (existingUser) {
+            if (!existingUser.google_id) {
+                db.prepare(
+                    `
+                    UPDATE users 
+                    SET google_id = ?, 
+                        provider = CASE 
+                            WHEN provider = 'local' THEN 'google' 
+                            ELSE provider 
+                        END,
+                        name = COALESCE(?, name)
+                    WHERE id = ?
+                `
+                ).run(googleUser.sub, googleUser.name, existingUser.id);
+            }
+            userId = existingUser.id.toString();
+        } else {
+            userId = await createUser({
+                email: googleUser.email,
+                name: googleUser.name,
+                provider: 'google',
+                google_id: googleUser.sub
+            });
+        }
+
+        await createAuthSession(userId);
 
         return new Response(null, {
             status: 302,

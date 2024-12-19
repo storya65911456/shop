@@ -5,6 +5,7 @@ import type { Dictionary, Locale } from '@/lib/dictionaries';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useActionState, useEffect } from 'react';
+import { FaGithub, FaGoogle } from 'react-icons/fa';
 
 interface AuthFormProps {
     dict: Dictionary;
@@ -41,46 +42,84 @@ export const AuthForm = ({ dict, lang, mode }: AuthFormProps) => {
                         {mode === 'signin' && dict.authFrom.button.sign}
                     </p>
                 </div>
-                <div className='mb-4'>
-                    <label
-                        htmlFor='email'
-                        className='block text-gray-700 text-sm font-bold mb-2'
-                    >
-                        {dict.authFrom.email}
-                    </label>
-                    <input
-                        type='email'
-                        name='email'
-                        placeholder={dict.authFrom.emailPlaceholder}
-                        className='w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange'
-                    />
+                {/* 表單 */}
+                <div className='mt-6'>
+                    {/* 信箱 */}
+                    <div className='mb-2'>
+                        <label
+                            htmlFor='email'
+                            className='block text-gray-700 text-sm font-bold mb-2'
+                        >
+                            {dict.authFrom.email}
+                        </label>
+                        <input
+                            type='email'
+                            name='email'
+                            placeholder={dict.authFrom.emailPlaceholder}
+                            className='w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange'
+                        />
+                    </div>
+                    {/* 密碼 */}
+                    <div className='mb-4'>
+                        <label
+                            htmlFor='password'
+                            className='block text-gray-700 text-sm font-bold mb-2'
+                        >
+                            {dict.authFrom.password}
+                        </label>
+                        <input
+                            type='password'
+                            name='password'
+                            placeholder={dict.authFrom.passwordPlaceholder}
+                            className='w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange'
+                        />
+                    </div>
+
+                    <div className='mb-2'>
+                        {/* 錯誤訊息 */}
+                        {state && typeof state === 'string' && (
+                            <div className='text-red-500'>{state}</div>
+                        )}
+                        {/* 按鈕 */}
+                        <button
+                            type='submit'
+                            className='w-full bg-orange text-white font-bold py-2 px-4 rounded-md hover:bg-[#f53d2d] transition-colors'
+                        >
+                            {mode === 'login' && dict.authFrom.button.login}
+                            {mode === 'signin' && dict.authFrom.button.sign}
+                        </button>
+                    </div>
                 </div>
-                <div className='mb-4'>
-                    <label
-                        htmlFor='password'
-                        className='block text-gray-700 text-sm font-bold mb-2'
-                    >
-                        {dict.authFrom.password}
-                    </label>
-                    <input
-                        type='password'
-                        name='password'
-                        placeholder={dict.authFrom.passwordPlaceholder}
-                        className='w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange'
-                    />
+                {/* 分隔線 */}
+                <div className='relative mt-4 mb-4'>
+                    <div className='absolute inset-0 flex items-center'>
+                        <div className='w-full border-t border-gray-300' />
+                    </div>
+                    <div className='relative flex justify-center text-sm'>
+                        <span className='px-2 text-gray-500 bg-white'>
+                            {dict.authFrom.divider}
+                        </span>
+                    </div>
                 </div>
-                <div className='mb-4'>
-                    {state && typeof state === 'string' && (
-                        <div className='text-red-500'>{state}</div>
-                    )}
-                    <button
-                        type='submit'
-                        className='w-full bg-orange text-white font-bold py-2 px-4 rounded-md hover:bg-[#f53d2d] transition-colors'
+                {/* 社交媒體登入按鈕 */}
+                <div className='flex flex-row items-center justify-center gap-2 mb-4'>
+                    <Link
+                        href={`/${lang}/login/google`}
+                        className='flex items-center justify-center w-full px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange'
                     >
-                        {mode === 'login' && dict.authFrom.button.login}
-                        {mode === 'signin' && dict.authFrom.button.sign}
-                    </button>
+                        <FaGoogle className='w-5 h-5 mr-2 text-red-500' />
+                        Google
+                    </Link>
+
+                    <Link
+                        href={`/${lang}/login/github`}
+                        className='flex items-center justify-center w-full px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange'
+                    >
+                        <FaGithub className='w-5 h-5 mr-2' />
+                        Github
+                    </Link>
                 </div>
+                {/* 切換登入/註冊連結 */}
                 <div className='text-center'>
                     {mode === 'login' && (
                         <Link

@@ -2,32 +2,24 @@
 
 import { logout } from '@/actions/auth-from';
 import { Dictionary, Locale } from '@/lib/dictionaries';
+import { UserData } from '@/lib/user';
 import Link from 'next/link';
-import { usePathname, useRouter, useSearchParams } from 'next/navigation';
-import { GrLanguage } from 'react-icons/gr';
 
 interface MyAccountDropdownProps {
     lang: Locale;
     dict: Dictionary;
-    isAuthenticated: boolean;
+    user: UserData | null;
 }
 
-export const MyAccountDropdown = ({
-    lang,
-    dict,
-    isAuthenticated
-}: MyAccountDropdownProps) => {
-    const router = useRouter();
-    const pathname = usePathname();
-    const searchParams = useSearchParams();
-
+export const MyAccountDropdown = ({ lang, dict, user }: MyAccountDropdownProps) => {
+    console.log('user', user);
     return (
-        <div className='relative group'>
-            {isAuthenticated ? (
+        <div className='relative group min-w-[100px]'>
+            {user ? (
                 <>
                     <div className='text-white px-2 py-2 rounded-md text-sm font-medium cursor-pointer flex justify-between items-center'>
-                        <button className='flex items-center justify-center gap-1'>
-                            {dict.header.account.myAccount}
+                        <button className='flex items-center justify-center w-full'>
+                            {user.name || user.email}
                         </button>
                     </div>
                     {/* Dropdown Menu */}
@@ -37,13 +29,13 @@ export const MyAccountDropdown = ({
                             <div className='absolute top-[3px] right-8 transform translate-y-0 w-3 h-3 bg-white rotate-45'></div>
                             {/* 選單內容 */}
                             <Link
-                                href={`/${lang}/account/profile`}
+                                href={`/${lang}/profile`}
                                 className='block px-4 py-2 text-black'
                             >
                                 {dict.header.account.profile}
                             </Link>
                             <Link
-                                href={`/${lang}/account/orders`}
+                                href={`/${lang}/orders`}
                                 className='block px-4 py-2 text-black'
                             >
                                 {dict.header.account.orders}

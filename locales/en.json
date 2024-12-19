@@ -20,7 +20,8 @@
         "link": {
             "login": "Already have an account? Login now",
             "sign": "Don't have an account? Sign up now"
-        }
+        },
+        "divider": "Or"
     },
     "header": {
         "language": "English",

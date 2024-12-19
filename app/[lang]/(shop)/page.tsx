@@ -1,5 +1,5 @@
 import Carousel from '@/components/Carousel';
-import { ContactMenu } from '@/components/ContactMenu';
+
 import { verifyAuth } from '@/lib/auth';
 import { getDictionary } from '@/lib/dictionaries';
 import Image from 'next/image';
@@ -62,8 +62,8 @@ export default async ({ params }: PageProps) => {
                     <Carousel slides={slides} />
                 </div>
                 <div className='h-full rounded-lg ml-1 w-[30%] flex flex-col'>
-                    <div className='h-[50%] bg-gray-300 rounded-lg mb-1'></div>
-                    <div className='h-[50%] bg-gray-300 rounded-lg mt-1'></div>
+                    <div className='h-[50%] bg-gray-100 rounded-lg mb-1'></div>
+                    <div className='h-[50%] bg-gray-100 rounded-lg mt-1'></div>
                 </div>
             </section>
 
@@ -98,7 +98,6 @@ export default async ({ params }: PageProps) => {
                     ))}
                 </div>
             </section>
-            <ContactMenu />
         </main>
     );
 };

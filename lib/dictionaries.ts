@@ -23,6 +23,7 @@ export interface Dictionary {
             login: string;
             sign: string;
         };
+        divider: string;
     };
     header: {
         language: string;

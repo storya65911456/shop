@@ -1,8 +1,12 @@
 import db from '@/db/db';
-import { lucia } from '@/lib/auth';
+import {
+    createAuthSession,
+    createUser,
+    findUserByEmail,
+    findUserByGithubId
+} from '@/lib/auth';
 import { github } from '@/lib/github';
 import { OAuth2RequestError } from 'arctic';
-import { generateIdFromEntropySize } from 'lucia';
 import { cookies } from 'next/headers';
 
 export async function GET(request: Request): Promise<Response> {
@@ -40,9 +44,57 @@ export async function GET(request: Request): Promise<Response> {
         }
 
         const githubUser: GitHubUser = await githubUserResponse.json();
-        console.log('GitHub user:', githubUser);
+        
 
-        const userId = generateIdFromEntropySize(10);
+        const emailsResponse = await fetch('https://api.github.com/user/emails', {
+            headers: {
+                Authorization: `Bearer ${accessToken}`,
+                'User-Agent': 'next-auth',
+                Accept: 'application/json'
+            }
+        });
+
+        const emails: Array<{ email: string; primary: boolean; verified: boolean }> =
+            await emailsResponse.json();
+        const primaryEmail = emails.find((email) => email.primary)?.email;
+
+        let userId: string | undefined;
+        let existingUser = await findUserByGithubId(githubUser.id);
+
+        if (!existingUser && primaryEmail) {
+            existingUser = await findUserByEmail(primaryEmail);
+        }
+
+        if (existingUser) {
+            if (!existingUser.github_id) {
+                db.prepare(
+                    `
+                    UPDATE users 
+                    SET github_id = ?, 
+                        provider = CASE 
+                            WHEN provider = 'local' THEN 'github' 
+                            ELSE provider 
+                        END,
+                        name = COALESCE(?, name)
+                    WHERE id = ?
+                `
+                ).run(
+                    githubUser.id,
+                    githubUser.name || githubUser.login,
+                    existingUser.id
+                );
+            }
+            userId = existingUser.id.toString();
+        } else {
+            userId = await createUser({
+                email: primaryEmail,
+                name: githubUser.name || githubUser.login,
+                provider: 'github',
+                github_id: githubUser.id
+            });
+        }
+
+        await createAuthSession(userId);
 
         return new Response(null, {
             status: 302,
@@ -68,4 +120,5 @@ export async function GET(request: Request): Promise<Response> {
 interface GitHubUser {
     id: string;
     login: string;
+    name?: string;
 }

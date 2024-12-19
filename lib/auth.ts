@@ -1,3 +1,5 @@
+'use server';
+
 import db from '@/db/db';
 import { BetterSqlite3Adapter } from '@lucia-auth/adapter-sqlite';
 import { Lucia, Session, User } from 'lucia';
@@ -9,7 +11,7 @@ const adapter = new BetterSqlite3Adapter(db, {
     session: 'sessions' // Session 資料表
 });
 
-export const lucia = new Lucia(adapter, {
+const lucia = new Lucia(adapter, {
     sessionCookie: {
         expires: false,
         attributes: {
@@ -29,9 +31,12 @@ declare module 'lucia' {
 }
 
 interface DatabaseUserAttributes {
-    username: string;
-    github_id?: number;
+    email?: string;
+    password?: string;
+    name: string;
     google_id?: string;
+    github_id?: string;
+    provider?: string;
 }
 
 // Session 驗證結果型別
@@ -110,4 +115,48 @@ export const destroySession = async (): Promise<{ error?: string }> => {
         console.error('Error destroying session:', error);
         return { error: 'Failed to destroy session!' };
     }
+};
+
+// 新增用戶相關的輔助函數
+export const findUserByEmail = async (email: string) => {
+    return db.prepare('SELECT * FROM users WHERE email = ?').get(email) as
+        | User
+        | undefined;
+};
+
+export const findUserByGoogleId = async (googleId: string) => {
+    return db.prepare('SELECT * FROM users WHERE google_id = ?').get(googleId) as
+        | User
+        | undefined;
+};
+
+export const findUserByGithubId = async (githubId: string) => {
+    return db.prepare('SELECT * FROM users WHERE github_id = ?').get(githubId) as
+        | User
+        | undefined;
+};
+
+export const createUser = async (userData: {
+    email?: string;
+    name: string;
+    provider: 'google' | 'github' | 'local';
+    google_id?: string;
+    github_id?: string;
+    password?: string;
+}) => {
+    const stmt = db.prepare(`
+        INSERT INTO users (email, name, provider, google_id, github_id, password)
+        VALUES (?, ?, ?, ?, ?, ?)
+    `);
+
+    const result = stmt.run(
+        userData.email,
+        userData.name,
+        userData.provider,
+        userData.google_id,
+        userData.github_id,
+        userData.password
+    );
+
+    return result.lastInsertRowid.toString();
 };

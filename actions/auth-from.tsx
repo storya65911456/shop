@@ -3,7 +3,7 @@
 import { createAuthSession, destroySession, verifyAuth } from '@/lib/auth';
 import { Dictionary } from '@/lib/dictionaries';
 import { hashUserPassword, verifyPassword } from '@/lib/hash';
-import { createUser, getUserByEmail, User } from '@/lib/user';
+import { createUser, getUserByEmail, UserData } from '@/lib/user';
 import { redirect } from 'next/navigation';
 
 // 定義錯誤類型
@@ -43,7 +43,12 @@ export const signInAction = async (
 
     const hashedPassword = hashUserPassword(passwordStr);
     try {
-        const id = createUser(emailStr, hashedPassword);
+        const id = await createUser({
+            email: emailStr,
+            password: hashedPassword,
+            name: '',
+            provider: 'local'
+        });
         await createAuthSession(id);
     } catch (error) {
         const sqliteError = error as SQLiteError;
@@ -87,14 +92,15 @@ export const loginAction = async (
     if (!existingUser) {
         return dict.authFrom.emailNotFound;
     }
-
-    const isValidPassword = verifyPassword(existingUser.password, passwordStr);
-    if (!isValidPassword) {
-        return dict.authFrom.passwordIncorrect;
+    if (existingUser.password) {
+        const isValidPassword = verifyPassword(existingUser.password, passwordStr);
+        if (!isValidPassword) {
+            return dict.authFrom.passwordIncorrect;
+        }
     }
 
     try {
-        await createAuthSession(existingUser.id);
+        await createAuthSession(existingUser.id.toString());
         return { success: true, redirect: '/' };
     } catch (error) {
         console.error('Login error:', error);

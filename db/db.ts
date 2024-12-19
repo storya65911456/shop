@@ -1,13 +1,8 @@
 import sql, { Database } from 'better-sqlite3';
 
 // 定義資料表的型別（可選）
-interface User {
-    id: number;
-    email: string;
-    password: string;
-}
 
-interface Session {
+export interface Session {
     id: string;
     expires_at: number;
     user_id: number;
@@ -21,7 +16,11 @@ db.exec(`
   CREATE TABLE IF NOT EXISTS users (
     id INTEGER PRIMARY KEY,
     email TEXT UNIQUE,
-    password TEXT
+    password TEXT,
+    name TEXT NOT NULL,
+    google_id TEXT UNIQUE,
+    github_id TEXT UNIQUE,
+    provider TEXT CHECK(provider IN ('google', 'github', 'local')) DEFAULT 'local'
   );
 `);
 

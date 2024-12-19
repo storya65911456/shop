@@ -22,7 +22,7 @@ interface MainHeaderProps {
 
 export const MainHeader = ({ lang, dict, user }: MainHeaderProps) => {
     return (
-        <header className='bg-orange'>
+        <header className='bg-orange shadow-sm shadow-gray-100'>
             {/* 上方導航欄 */}
             <div className='w-[1280px] mx-auto px-4 py-2 text-white text-sm'>
                 <div className='flex justify-between items-center'>

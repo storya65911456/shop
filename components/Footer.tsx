@@ -52,7 +52,7 @@ export const Footer = () => {
                     <div className='flex space-x-2'></div>
                 </div>
             </div>
-            <div className='text-center text-sm mt-8 border-t pt-4'>
+            <div className='text-center text-sm mt-8 border-t py-4'>
                 © 2024 XXXX. 版權所有。
             </div>
         </footer>

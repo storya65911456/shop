@@ -1,11 +1,7 @@
 import db from '@/db/db';
-import {
-    createAuthSession,
-    createUser,
-    findUserByEmail,
-    findUserByGoogleId
-} from '@/lib/auth';
+import { createAuthSession } from '@/lib/auth';
 import { google } from '@/lib/google';
+import { createUser, findUserByEmail, findUserByGoogleId } from '@/lib/user';
 import { OAuth2RequestError } from 'arctic';
 import { generateIdFromEntropySize } from 'lucia';
 import { cookies } from 'next/headers';

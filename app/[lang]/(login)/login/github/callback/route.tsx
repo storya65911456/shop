@@ -1,11 +1,7 @@
 import db from '@/db/db';
-import {
-    createAuthSession,
-    createUser,
-    findUserByEmail,
-    findUserByGithubId
-} from '@/lib/auth';
+import { createAuthSession } from '@/lib/auth';
 import { github } from '@/lib/github';
+import { createUser, findUserByEmail, findUserByGithubId } from '@/lib/user';
 import { OAuth2RequestError } from 'arctic';
 import { cookies } from 'next/headers';
 
@@ -44,7 +40,6 @@ export async function GET(request: Request): Promise<Response> {
         }
 
         const githubUser: GitHubUser = await githubUserResponse.json();
-        
 
         const emailsResponse = await fetch('https://api.github.com/user/emails', {
             headers: {

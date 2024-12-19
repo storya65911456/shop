@@ -35,7 +35,11 @@
             "fileListItems": {
                 "username": "使用者帳號",
                 "nickname": "暱稱",
-                "email": "Email"
+                "email": "Email",
+                "updateSuccess": "更新成功！",
+                "updateError": "更新失敗，請稍後再試",
+                "saving": "儲存中...",
+                "nicknamePlaceholder": "請輸入暱稱"
             },
             "fileListItemsPicture": {
                 "text1": "檔案大小:最大1MB",

@@ -10,10 +10,11 @@ interface UserRow {
 // 定義用戶介面
 
 export interface UserData {
-    id: number;
+    id: string;
     email?: string;
     password?: string;
     name: string;
+    nickname?: string;
     provider: 'google' | 'github' | 'local';
     google_id?: string;
     github_id?: string;

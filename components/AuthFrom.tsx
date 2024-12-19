@@ -1,6 +1,6 @@
 'use client';
 
-import { authFormAction } from '@/actions/auth-from';
+import { authFormAction } from '@/actions/auth-from-login';
 import type { Dictionary, Locale } from '@/lib/dictionaries';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';

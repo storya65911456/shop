@@ -38,6 +38,10 @@ export interface Dictionary {
                 username: string;
                 nickname: string;
                 email: string;
+                updateSuccess: string;
+                updateError: string;
+                saving: string;
+                nicknamePlaceholder: string;
             };
             fileListItemsPicture: {
                 text1: string;

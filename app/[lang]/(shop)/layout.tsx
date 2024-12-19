@@ -17,20 +17,7 @@ interface ShopLayoutProps {
 export default async ({ children, params }: ShopLayoutProps) => {
     const { lang } = await params;
     const dict = await getDictionary(lang as 'en' | 'zh-TW');
-    const { user: authUser } = await verifyAuth();
-
-    // 將 Lucia User 轉換為 UserData 類型
-    const user: UserData | null = authUser
-        ? {
-              id: parseInt(authUser.id),
-              name: authUser.name,
-              email: authUser.email,
-              password: authUser.password,
-              google_id: authUser.google_id,
-              github_id: authUser.github_id,
-              provider: (authUser.provider || 'local') as 'google' | 'github' | 'local'
-          }
-        : null;
+    const { user } = await verifyAuth();
 
     return (
         <html lang={lang}>

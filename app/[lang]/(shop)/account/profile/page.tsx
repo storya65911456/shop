@@ -1,3 +1,4 @@
+import { DetailEditor } from '@/components/DetailEditor';
 import { verifyAuth } from '@/lib/auth';
 import { getDictionary } from '@/lib/dictionaries';
 import { CgProfile } from 'react-icons/cg';
@@ -45,27 +46,7 @@ export default async ({
                                 </ul>
                             </div>
                             {/* 資訊 */}
-                            <div className='w-[70%] h-full pl-2'>
-                                <ul className='flex-col gap-4 w-full h-full'>
-                                    <li className='w-full h-[15%] flex items-center justify-start'>
-                                        {user?.name}
-                                    </li>
-                                    <li className='w-full h-[15%] flex items-center justify-start'>
-                                        <input
-                                            className='w-[80%] h-[80%] border-2 border-gray-300/90 rounded-md p-1'
-                                            type='text'
-                                        />
-                                    </li>
-                                    <li className='w-full h-[15%] flex items-center justify-start'>
-                                        {user?.email}
-                                    </li>
-                                    <li className='w-full h-[15%] flex items-center justify-start'>
-                                        <button className='w-[20%] h-[80%] bg-orange rounded shadow-sm shadow-gray-500/90 hover:bg-[#f53d2d] transition-all duration-300'>
-                                            {dict.account.profile.button.save}
-                                        </button>
-                                    </li>
-                                </ul>
-                            </div>
+                            <DetailEditor user={user} dict={dict} />
                         </div>
                         {/* 頭像 */}
                         <div className='w-[30%] h-full'>

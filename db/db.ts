@@ -18,6 +18,7 @@ db.exec(`
     email TEXT UNIQUE,
     password TEXT,
     name TEXT NOT NULL,
+    nickname TEXT,
     google_id TEXT UNIQUE,
     github_id TEXT UNIQUE,
     provider TEXT CHECK(provider IN ('google', 'github', 'local')) DEFAULT 'local'

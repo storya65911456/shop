@@ -35,7 +35,11 @@
             "fileListItems": {
                 "username": "Username",
                 "nickname": "Nickname",
-                "email": "Email"
+                "email": "Email",
+                "updateSuccess": "Update successful!",
+                "updateError": "Update failed, please try again later",
+                "saving": "Saving...",
+                "nicknamePlaceholder": "Enter nickname"
             },
             "fileListItemsPicture": {
                 "text1": "File size: Maximum 1MB",

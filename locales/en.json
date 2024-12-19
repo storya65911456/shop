@@ -23,6 +23,30 @@
         },
         "divider": "Or"
     },
+    "account": {
+        "menu": {
+            "profile": "Profile",
+            "editPassword": "Edit Password"
+        },
+        "profile": {
+            "title": "Profile",
+            "fileList": "My Files",
+            "fileListDescription": "Manage your files to protect your account",
+            "fileListItems": {
+                "username": "Username",
+                "nickname": "Nickname",
+                "email": "Email"
+            },
+            "fileListItemsPicture": {
+                "text1": "File size: Maximum 1MB",
+                "text2": "File type: png, jpeg"
+            },
+            "button": {
+                "select": "Select Image",
+                "save": "Save"
+            }
+        }
+    },
     "header": {
         "language": "English",
         "languageDropdown": {

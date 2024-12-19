@@ -23,6 +23,30 @@
         },
         "divider": "或"
     },
+    "account": {
+        "menu": {
+            "profile": "個人資料",
+            "editPassword": "變更密碼"
+        },
+        "profile": {
+            "title": "個人資料",
+            "fileList": "我的檔案",
+            "fileListDescription": "管理你的檔案以保護你的帳戶",
+            "fileListItems": {
+                "username": "使用者帳號",
+                "nickname": "暱稱",
+                "email": "Email"
+            },
+            "fileListItemsPicture": {
+                "text1": "檔案大小:最大1MB",
+                "text2": "檔案類型:jpg, png, jpeg"
+            },
+            "button": {
+                "select": "選擇圖片",
+                "save": "保存"
+            }
+        }
+    },
     "header": {
         "language": "繁體中文",
         "languageDropdown": {

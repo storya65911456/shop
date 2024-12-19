@@ -25,6 +25,30 @@ export interface Dictionary {
         };
         divider: string;
     };
+    account: {
+        menu: {
+            profile: string;
+            editPassword: string;
+        };
+        profile: {
+            title: string;
+            fileList: string;
+            fileListDescription: string;
+            fileListItems: {
+                username: string;
+                nickname: string;
+                email: string;
+            };
+            fileListItemsPicture: {
+                text1: string;
+                text2: string;
+            };
+            button: {
+                select: string;
+                save: string;
+            };
+        };
+    };
     header: {
         language: string;
         languageDropdown: {

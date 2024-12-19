@@ -51,7 +51,6 @@ const slides = [
 export default async ({ params }: PageProps) => {
     const { lang } = await params;
     const dict = await getDictionary(lang as 'en' | 'zh-TW');
-    const { user } = await verifyAuth();
 
     return (
         <main className='w-[1280px] mx-auto px-4 py-6 overflow-auto whitespace-nowrap'>

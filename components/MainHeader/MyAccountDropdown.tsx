@@ -29,7 +29,7 @@ export const MyAccountDropdown = ({ lang, dict, user }: MyAccountDropdownProps) 
                             <div className='absolute top-[3px] right-8 transform translate-y-0 w-3 h-3 bg-white rotate-45'></div>
                             {/* 選單內容 */}
                             <Link
-                                href={`/${lang}/profile`}
+                                href={`/${lang}/account/profile`}
                                 className='block px-4 py-2 text-black'
                             >
                                 {dict.header.account.profile}

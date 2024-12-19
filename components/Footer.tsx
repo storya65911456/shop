@@ -1,6 +1,6 @@
 export const Footer = () => {
     return (
-        <footer className='bg-[#2C2C2C]'>
+        <footer className='bg-[#2C2C2C] border-t-4 border-orange'>
             <div className='w-[1280px] mx-auto px-4 pt-10 overflow-auto whitespace-nowrap flex'>
                 {/* 客服中心 */}
                 <div className='w-[250px]'>

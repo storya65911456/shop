@@ -1,6 +1,6 @@
 'use client';
 
-import { logout } from '@/actions/auth-from';
+import { logout } from '@/actions/auth-from-login';
 import { Dictionary, Locale } from '@/lib/dictionaries';
 import { UserData } from '@/lib/user';
 import Link from 'next/link';

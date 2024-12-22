@@ -2,7 +2,9 @@ import Carousel from '@/components/Carousel';
 
 import { verifyAuth } from '@/lib/auth';
 import { getDictionary } from '@/lib/dictionaries';
+import { getAllProducts, Product } from '@/lib/product';
 import Image from 'next/image';
+import Link from 'next/link';
 
 interface PageProps {
     params: Promise<{
@@ -52,6 +54,8 @@ export default async ({ params }: PageProps) => {
     const { lang } = await params;
     const dict = await getDictionary(lang as 'en' | 'zh-TW');
 
+    const products = getAllProducts();
+
     return (
         <main className='w-[1280px] mx-auto px-4 py-6 overflow-auto whitespace-nowrap'>
             {/* 輪播廣告 */}
@@ -84,16 +88,25 @@ export default async ({ params }: PageProps) => {
             <section>
                 <h2 className='text-xl font-bold mb-4'>熱門商品</h2>
                 <div className='grid grid-cols-6 gap-4'>
-                    {Array.from({ length: 12 }).map((_, i) => (
-                        <div key={i} className='border rounded-lg overflow-hidden'>
+                    {products.map((product) => (
+                        <Link
+                            key={product.id}
+                            href={`/${lang}/${product.id}`}
+                            className='border rounded-lg overflow-hidden hover:shadow-lg transition-shadow'
+                        >
                             <div className='aspect-square bg-gray-100'>
                                 {/* 商品圖片 */}
                             </div>
                             <div className='p-2'>
-                                <p className='text-sm line-clamp-2'>商品名稱 {i + 1}</p>
-                                <p className='text-[#f53d2d] mt-2'>$ {(i + 1) * 100}</p>
+                                <p className='text-sm line-clamp-2'>{product.name}</p>
+                                <p className='text-[#f53d2d] mt-2'>
+                                    NT$ {product.price.toLocaleString()}
+                                </p>
+                                <p className='text-xs text-gray-500 mt-1'>
+                                    庫存: {product.stock}
+                                </p>
                             </div>
-                        </div>
+                        </Link>
                     ))}
                 </div>
             </section>

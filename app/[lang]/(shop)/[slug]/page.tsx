@@ -1,7 +1,16 @@
 import { getProductById } from '@/lib/product';
 
-export default async ({ params }: { params: { slug: string } }) => {
-    const product = getProductById(parseInt(params.slug));
+interface PageProps {
+    params: Promise<{
+        lang: string;
+        slug: string;
+    }>;
+}
+
+export default async ({ params }: PageProps) => {
+    const { slug } = await params;
+
+    const product = getProductById(parseInt(slug));
     if (!product) {
         return <div>Product not found</div>;
     }

@@ -75,7 +75,7 @@ export default async ({ params }: PageProps) => {
                 <div className='grid grid-cols-10 gap-4'>
                     {Array.from({ length: 10 }).map((_, i) => (
                         <div key={i} className='text-center cursor-pointer'>
-                            <div className='bg-gray-100 rounded-lg p-8 mb-2 transition ease-in-out delay-100 hover:-translate-y-1 hover:scale-110 duration-300'>
+                            <div className='bg-gray-100 rounded-md p-8 mb-2 transition ease-in-out delay-100 hover:-translate-y-1 hover:scale-110 duration-300'>
                                 {/* 分類圖標 */}
                             </div>
                             <span>分類 {i + 1}</span>
@@ -84,15 +84,16 @@ export default async ({ params }: PageProps) => {
                 </div>
             </section>
 
-            {/* 熱門商品 */}
+            {/* 每日新發現 */}
             <section>
-                <h2 className='text-xl font-bold mb-4'>熱門商品</h2>
+                <h2 className='text-xl font-bold mb-4'>每日新發現</h2>
                 <div className='grid grid-cols-6 gap-4'>
                     {products.map((product) => (
                         <Link
                             key={product.id}
                             href={`/${lang}/${product.id}`}
-                            className='border rounded-lg overflow-hidden hover:shadow-lg transition-shadow'
+                            className='border rounded-nd overflow-hidden hover:shadow-lg transition-shadow hover:shadow-orange
+                            hover:scale-105'
                         >
                             <div className='aspect-square bg-gray-100'>
                                 {/* 商品圖片 */}
@@ -101,9 +102,6 @@ export default async ({ params }: PageProps) => {
                                 <p className='text-sm line-clamp-2'>{product.name}</p>
                                 <p className='text-[#f53d2d] mt-2'>
                                     NT$ {product.price.toLocaleString()}
-                                </p>
-                                <p className='text-xs text-gray-500 mt-1'>
-                                    庫存: {product.stock}
                                 </p>
                             </div>
                         </Link>

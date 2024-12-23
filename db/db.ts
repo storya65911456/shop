@@ -34,20 +34,115 @@ db.exec(`
   );
 `);
 
-// 初始化商品表
+// 商品表，新增平均評分欄位
 db.exec(`
     CREATE TABLE IF NOT EXISTS products (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         name TEXT NOT NULL,
         description TEXT,
         price DECIMAL(10,2) NOT NULL,
-        stock INTEGER NOT NULL DEFAULT 0,
-        seller_id INTEGER,
-        seller_type TEXT CHECK(seller_type IN ('company', 'user')) NOT NULL,
+        discount_percent INTEGER CHECK(discount_percent >= 0 AND discount_percent <= 100) DEFAULT 100,
+        seller_id INTEGER NOT NULL,
+        has_variants BOOLEAN DEFAULT FALSE,
+        rating_avg DECIMAL(2,1) DEFAULT 0,  -- 平均評分，保留一位小數
+        rating_count INTEGER DEFAULT 0,     -- 評價數量
         created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
         updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
         FOREIGN KEY (seller_id) REFERENCES users(id)
     )
+`);
+
+// 新增商品變體表（用於管理不同尺寸和顏色的組合）
+db.exec(`
+    CREATE TABLE IF NOT EXISTS product_variants (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        product_id INTEGER NOT NULL,
+        size TEXT,
+        color TEXT,
+        stock INTEGER NOT NULL DEFAULT 0,
+        sku TEXT UNIQUE,
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+        updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (product_id) REFERENCES products(id) ON DELETE CASCADE,
+        UNIQUE(product_id, size, color)
+    )
+`);
+
+// 新增商品評價表
+db.exec(`
+    CREATE TABLE IF NOT EXISTS product_reviews (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        product_id INTEGER NOT NULL,
+        user_id INTEGER NOT NULL,
+        rating INTEGER CHECK(rating >= 1 AND rating <= 5) NOT NULL,
+        comment TEXT,
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+        updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (product_id) REFERENCES products(id) ON DELETE CASCADE,
+        FOREIGN KEY (user_id) REFERENCES users(id),
+        UNIQUE(product_id, user_id)  -- 每個用戶只能評價一次
+    )
+`);
+
+// 新增觸發器，在新增評價時自動更新商品的平均評分和評價數量
+db.exec(`
+    CREATE TRIGGER IF NOT EXISTS update_product_rating_after_insert
+    AFTER INSERT ON product_reviews
+    BEGIN
+        UPDATE products 
+        SET 
+            rating_avg = (
+                SELECT ROUND(AVG(CAST(rating AS FLOAT)), 1)
+                FROM product_reviews
+                WHERE product_id = NEW.product_id
+            ),
+            rating_count = (
+                SELECT COUNT(*)
+                FROM product_reviews
+                WHERE product_id = NEW.product_id
+            )
+        WHERE id = NEW.product_id;
+    END;
+`);
+
+// 新增觸發器，在更新評價時自動更新商品的平均評分
+db.exec(`
+    CREATE TRIGGER IF NOT EXISTS update_product_rating_after_update
+    AFTER UPDATE ON product_reviews
+    BEGIN
+        UPDATE products 
+        SET 
+            rating_avg = (
+                SELECT ROUND(AVG(CAST(rating AS FLOAT)), 1)
+                FROM product_reviews
+                WHERE product_id = NEW.product_id
+            )
+        WHERE id = NEW.product_id;
+    END;
+`);
+
+// 新增觸發器，在刪除評價時自動更新商品的平均評分和評價數量
+db.exec(`
+    CREATE TRIGGER IF NOT EXISTS update_product_rating_after_delete
+    AFTER DELETE ON product_reviews
+    BEGIN
+        UPDATE products 
+        SET 
+            rating_avg = COALESCE(
+                (
+                    SELECT ROUND(AVG(CAST(rating AS FLOAT)), 1)
+                    FROM product_reviews
+                    WHERE product_id = OLD.product_id
+                ),
+                0
+            ),
+            rating_count = (
+                SELECT COUNT(*)
+                FROM product_reviews
+                WHERE product_id = OLD.product_id
+            )
+        WHERE id = OLD.product_id;
+    END;
 `);
 
 const hasProducts = db.prepare('SELECT COUNT(*) as count FROM products').get() as {
@@ -55,13 +150,107 @@ const hasProducts = db.prepare('SELECT COUNT(*) as count FROM products').get() a
 };
 
 if (hasProducts.count === 0) {
+    // 創建系統帳號
     db.exec(`
-        INSERT INTO products (name, description, price, stock, seller_type)
+        INSERT INTO users (email, name, provider)
         VALUES 
-            ('精選咖啡豆', '來自哥倫比亞的優質阿拉比卡咖啡豆，中度烘焙', 399.0, 100, 'company'),
-            ('手沖咖啡套組', '含手沖壺、濾杯、濾紙等完整配件', 1299.0, 100, 'company'),
-            ('職人手作餅乾', '純手工製作，無添加防腐劑', 199.0, 200, 'company'),
-            ('自動鉛筆', '優質好寫，便宜', 20.0, 350, 'company');
+            ('system@shop.com', '系統管理員', 'local'),
+            ('system2@shop.com', '系統評價員', 'local');
+    `);
+
+    // 獲取系統賣家ID
+    const systemUser = db
+        .prepare('SELECT id FROM users WHERE email = ?')
+        .get('system@shop.com') as { id: number };
+
+    const systemReviewer = db
+        .prepare('SELECT id FROM users WHERE email = ?')
+        .get('system2@shop.com') as { id: number };
+
+    // 插入基本商品，使用系統賣家ID
+    db.exec(`
+        INSERT INTO products (
+            name, 
+            description, 
+            price, 
+            discount_percent,
+            seller_id, 
+            has_variants
+        )
+        VALUES 
+            (
+                '精選咖啡豆', 
+                '來自哥倫比亞的優質阿拉比卡咖啡豆，中度烘焙', 
+                399.0,
+                80,
+                ${systemUser.id}, 
+                false
+            ),
+            (
+                '手沖咖啡套組', 
+                '含手沖壺、濾杯、濾紙等完整配件', 
+                1299.0,
+                100,
+                ${systemUser.id}, 
+                false
+            ),
+            (
+                '職人手作餅乾', 
+                '純手工製作，無添加防腐劑', 
+                199.0,
+                85,
+                ${systemUser.id}, 
+                false
+            ),
+            (
+                '自動鉛筆', 
+                '優質好寫，便宜', 
+                20.0,
+                100,
+                ${systemUser.id}, 
+                false
+            ),
+            (
+                '純棉T恤', 
+                '100%純棉，舒適透氣', 
+                599.0,
+                90,
+                ${systemUser.id}, 
+                true
+            );
+    `);
+
+    // 為一般商品添加默認庫存記錄
+    db.exec(`
+        INSERT INTO product_variants (product_id, stock, sku)
+        VALUES 
+            (1, 100, 'COFFEE-001'),
+            (2, 50, 'COFFEE-SET-001'),
+            (3, 200, 'COOKIE-001'),
+            (4, 350, 'PENCIL-001');
+    `);
+
+    // 為純棉T恤添加不同尺寸和顏色的庫存
+    db.exec(`
+        INSERT INTO product_variants (product_id, size, color, stock, sku)
+        VALUES 
+            (5, 'S', '白色', 50, 'TCT-S-WHITE'),
+            (5, 'S', '黑色', 50, 'TCT-S-BLACK'),
+            (5, 'M', '白色', 100, 'TCT-M-WHITE'),
+            (5, 'M', '黑色', 100, 'TCT-M-BLACK'),
+            (5, 'L', '白色', 80, 'TCT-L-WHITE'),
+            (5, 'L', '黑色', 80, 'TCT-L-BLACK');
+    `);
+
+    // 為商品添加示例評價
+    db.exec(`
+        INSERT INTO product_reviews (product_id, user_id, rating, comment)
+        VALUES 
+            (1, ${systemUser.id}, 5, '咖啡豆香氣十足，很推薦！'),
+            (1, ${systemReviewer.id}, 4, '品質不錯，但價格稍高'),
+            (2, ${systemUser.id}, 5, '套組很完整，很適合入門'),
+            (3, ${systemReviewer.id}, 4, '餅乾很好吃，包裝也很精美'),
+            (5, ${systemUser.id}, 5, '衣服質地很好，尺寸也很合身');
     `);
 }
 

@@ -46,6 +46,7 @@ db.exec(`
         has_variants BOOLEAN DEFAULT FALSE,
         rating_avg DECIMAL(2,1) DEFAULT 0,  -- 平均評分，保留一位小數
         rating_count INTEGER DEFAULT 0,     -- 評價數量
+        sales_count INTEGER DEFAULT 0,      -- 新增銷售數量欄位
         created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
         updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
         FOREIGN KEY (seller_id) REFERENCES users(id)
@@ -175,7 +176,8 @@ if (hasProducts.count === 0) {
             price, 
             discount_percent,
             seller_id, 
-            has_variants
+            has_variants,
+            sales_count
         )
         VALUES 
             (
@@ -184,7 +186,8 @@ if (hasProducts.count === 0) {
                 399.0,
                 80,
                 ${systemUser.id}, 
-                false
+                false,
+                156
             ),
             (
                 '手沖咖啡套組', 
@@ -192,7 +195,8 @@ if (hasProducts.count === 0) {
                 1299.0,
                 100,
                 ${systemUser.id}, 
-                false
+                false,
+                89
             ),
             (
                 '職人手作餅乾', 
@@ -200,7 +204,8 @@ if (hasProducts.count === 0) {
                 199.0,
                 85,
                 ${systemUser.id}, 
-                false
+                false,
+                324
             ),
             (
                 '自動鉛筆', 
@@ -208,7 +213,8 @@ if (hasProducts.count === 0) {
                 20.0,
                 100,
                 ${systemUser.id}, 
-                false
+                false,
+                1240
             ),
             (
                 '純棉T恤', 
@@ -216,7 +222,8 @@ if (hasProducts.count === 0) {
                 599.0,
                 90,
                 ${systemUser.id}, 
-                true
+                true,
+                438
             );
     `);
 

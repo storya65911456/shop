@@ -101,7 +101,10 @@ export default async ({ params }: PageProps) => {
                             <div className='p-2'>
                                 <p className='text-sm line-clamp-2'>{product.name}</p>
                                 <p className='text-[#f53d2d] mt-2'>
-                                    NT$ {product.price.toLocaleString()}
+                                    ${product.price.toLocaleString()}
+                                </p>
+                                <p className='text-xs text-gray-400 mt-1'>
+                                    已售出 {product.sales_count}
                                 </p>
                             </div>
                         </Link>

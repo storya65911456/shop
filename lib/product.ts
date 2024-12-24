@@ -31,6 +31,7 @@ export interface Product {
     has_variants: boolean;
     rating_avg: number;
     rating_count: number;
+    sales_count: number;
     variants?: ProductVariant[];
     reviews?: ProductReview[];
     seller?: {

@@ -1,8 +1,8 @@
 'use client';
 
-import { SizeSelector } from '@/components/SizeSelector';
 import { Product, ProductVariant } from '@/lib/product';
 import { useState } from 'react';
+import { SizeSelector } from './SizeSelector';
 
 interface ProductDetailProps {
     product: Product;

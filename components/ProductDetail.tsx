@@ -1,6 +1,8 @@
 'use client';
 
 import { Product, ProductVariant } from '@/lib/product';
+import freeShippingIcon from '@/public/images/free-shipping.png';
+import Image from 'next/image';
 import { useState } from 'react';
 import { SizeSelector } from './SizeSelector';
 
@@ -114,18 +116,52 @@ export function ProductDetail({ product }: ProductDetailProps) {
                     {/* 商品變體選擇器 */}
                     <div className='flex flex-col gap-8 mt-5'>
                         {/* 優惠卷 */}
-                        <div className='flex flex-row gap-5 items-center justify-start'>
+                        <div className='flex flex-row gap-5 items-start justify-start'>
                             <h3 className='w-[100px]'>賣場優惠卷</h3>
                             <p>優惠卷</p>
                         </div>
                         {/* 運送 */}
-                        <div className='flex flex-row gap-5 items-center justify-start'>
+                        <div className='flex flex-row gap-5 items-start justify-start'>
                             <h3 className='w-[100px]'>運送</h3>
-                            <p>運送</p>
+                            <div className='flex flex-col gap-2 items-start justify-start'>
+                                <div className='flex flex-row gap-2 items-start justify-start'>
+                                    <Image
+                                        src={freeShippingIcon}
+                                        alt='免運'
+                                        width={25}
+                                        height={25}
+                                    />
+                                    <div className='flex flex-col items-start justify-center'>
+                                        <p>免運費</p>
+                                        <p className='text-sm text-gray-400'>
+                                            滿$199，免運費
+                                        </p>
+                                    </div>
+                                </div>
+                                <div className='flex flex-row gap-2 items-start justify-start'>
+                                    <Image
+                                        src='https://deo.shopeemobile.com/shopee/shopee-pcmall-live-sg/productdetailspage/baa823ac1c58392c2031.svg'
+                                        alt='運費'
+                                        className='opacity-50 brightness-0 invert'
+                                        width={25}
+                                        height={25}
+                                    />
+                                    <div className='flex flex-col gap-3 items-start justify-center'>
+                                        <div className='flex flex-row gap-20 items-center justify-center'>
+                                            <p>運送 到</p>
+                                            <p>運費</p>
+                                        </div>
+                                        <div className='flex flex-row gap-24 items-center justify-center'>
+                                            <p>運費</p>
+                                            <p>運費</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                         {/* 顏色 */}
                         {colors.length > 0 && (
-                            <div className='flex flex-row gap-5 items-center justify-start'>
+                            <div className='flex flex-row gap-5 items-start justify-start'>
                                 <h3 className='w-[100px]'>顏色</h3>
                                 <div className='flex gap-2'>
                                     {colors.map((color) => (
@@ -146,7 +182,7 @@ export function ProductDetail({ product }: ProductDetailProps) {
                         )}
                         {/* 尺寸 */}
                         {sizes.length > 0 && (
-                            <div className='flex flex-row gap-5 items-center justify-start'>
+                            <div className='flex flex-row gap-5 items-start justify-start'>
                                 <h3 className='w-[100px]'>尺寸</h3>
                                 <SizeSelector
                                     sizes={sizes as string[]}
@@ -156,7 +192,7 @@ export function ProductDetail({ product }: ProductDetailProps) {
                             </div>
                         )}
                         {/* 庫存資訊 */}
-                        <div className='flex flex-row gap-5 items-center justify-start'>
+                        <div className='flex flex-row gap-5 items-start justify-start'>
                             <h3 className='w-[100px]'>庫存</h3>
                             {product.has_variants ? (
                                 currentVariant ? (
@@ -168,8 +204,8 @@ export function ProductDetail({ product }: ProductDetailProps) {
                                 <p>{product.variants?.[0]?.stock}</p>
                             )}
                         </div>
-                        {/* 數量選擇器 */}
-                        <div className='flex flex-row gap-5 items-center justify-start'>
+                        {/* 數量選擇 */}
+                        <div className='flex flex-row gap-5 items-start justify-start'>
                             <h3 className='w-[100px]'>數量</h3>
                             <div className='flex items-center border rounded'>
                                 <button

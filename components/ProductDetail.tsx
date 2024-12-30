@@ -1,19 +1,23 @@
 'use client';
 
 import { Product, ProductVariant } from '@/lib/product';
+import { Review } from '@/lib/review';
 import freeShippingIcon from '@/public/images/free-shipping.png';
 import Image from 'next/image';
-import { useState } from 'react';
+import { useRef, useState } from 'react';
+import { RatingStars } from './RatingStars';
 import { SizeSelector } from './SizeSelector';
 
 interface ProductDetailProps {
     product: Product;
+    reviews: Review[];
 }
 
-export function ProductDetail({ product }: ProductDetailProps) {
+export function ProductDetail({ product, reviews }: ProductDetailProps) {
     const [selectedSize, setSelectedSize] = useState<string>('');
     const [selectedColor, setSelectedColor] = useState<string>('');
     const [quantity, setQuantity] = useState(1);
+    const [selectedRating, setSelectedRating] = useState<number | null>(null);
 
     // 計算實際售價（四捨五入到整數）
     const actualPrice = Math.round((product.price * product.discount_percent) / 100);
@@ -27,6 +31,22 @@ export function ProductDetail({ product }: ProductDetailProps) {
         (v) => v.size === selectedSize && v.color === selectedColor
     );
 
+    // 計算每個星級的評價數量
+    const ratingCounts = reviews.reduce((acc, review) => {
+        acc[review.rating] = (acc[review.rating] || 0) + 1;
+        return acc;
+    }, {} as Record<number, number>);
+
+    // 根據選擇的評分篩選評價
+    const filteredReviews = selectedRating
+        ? reviews.filter((review) => review.rating === selectedRating)
+        : reviews;
+
+    // 只顯示有評價的星級按鈕
+    const availableRatings = Object.keys(ratingCounts)
+        .map(Number)
+        .sort((a, b) => b - a);
+
     // 在組件中添加一些調試信息
     console.log('Product ratings:', {
         avg: product.rating_avg,
@@ -39,6 +59,17 @@ export function ProductDetail({ product }: ProductDetailProps) {
         if (value >= 1 && value <= maxStock) {
             setQuantity(value);
         }
+    };
+
+    // 添加 ref 用於評價區域
+    const reviewsRef = useRef<HTMLDivElement>(null);
+
+    // 添加滾動到評價區域的函數
+    const scrollToReviews = () => {
+        reviewsRef.current?.scrollIntoView({
+            behavior: 'smooth',
+            block: 'start'
+        });
     };
 
     return (
@@ -55,32 +86,19 @@ export function ProductDetail({ product }: ProductDetailProps) {
                     <h1 className='text-2xl font-bold'>{product.name}</h1>
                     {/* 評分區域 */}
                     {product.rating_count > 0 ? (
-                        <div className='flex items-center gap-4'>
+                        <div className='flex items-center gap-4 '>
                             <div className='flex items-center'>
                                 <span className='mr-1 text-orange'>
                                     {product.rating_avg.toFixed(1)}
                                 </span>
-                                {/* TODO: 星星還沒做完 */}
-                                <div className='flex text-orange'>
-                                    {[1, 2, 3, 4, 5].map((index) => {
-                                        const diff = product.rating_avg - index + 1;
-                                        return (
-                                            <span key={index}>
-                                                {
-                                                    diff >= 0
-                                                        ? '★' // 完整星星
-                                                        : diff > -1
-                                                        ? '&#11240;' // 半星
-                                                        : '☆' // 空星
-                                                }
-                                            </span>
-                                        );
-                                    })}
-                                </div>
+                                <RatingStars rating={product.rating_avg} size='lg' />
                             </div>
                             {/* 分割符號 */}
                             <span className='text-gray-100/70'>|</span>
-                            <span className='text-gray-300'>
+                            <span
+                                className='text-gray-300 cursor-pointer hover:opacity-80 underline'
+                                onClick={scrollToReviews}
+                            >
                                 {product.rating_count} 個評價
                             </span>
                             {/* 分割符號 */}
@@ -332,10 +350,98 @@ export function ProductDetail({ product }: ProductDetailProps) {
                     </div>
                 </div>
             </div>
-            {/* 第三個方塊 商品描述 */}
-            <div className='mt-8 w-full'>
-                <h2 className='text-xl font-bold mb-4'>商品描述</h2>
-                <p className='whitespace-pre-line'>{product.description}</p>
+            {/* 下方方塊 + 右側廣告 */}
+            <div className='w-full flex flex-row gap-5'>
+                {/* 左側 */}
+                <div className='w-[80%] flex flex-col gap-5'>
+                    {/* 第三個方塊 商品描述 */}
+                    <div className='w-full p-4 bg-gray-100/10 shadow-sm rounded-sm shadow-gray-100/30 flex'>
+                        <h2 className='text-xl font-bold mb-4'>商品描述</h2>
+                        <p className='whitespace-pre-line'>{product.description}</p>
+                    </div>
+                    {/* 第四個方塊 商品評價 */}
+                    <div
+                        ref={reviewsRef}
+                        className='w-full bg-gray-100/10 shadow-sm rounded-sm shadow-gray-100/30 flex flex-col p-4 gap-4'
+                    >
+                        <h2 className='text-xl font-bold'>商品評價</h2>
+                        {/* 評分統計 */}
+                        <div className='flex items-start justify-start flex-row gap-10 w-full bg-gray-100/20 rounded-sm p-4'>
+                            {/* 星星 + 分數 */}
+                            <div className='flex items-center flex-col'>
+                                <div className='flex items-end'>
+                                    <span className='text-orange text-2xl font-bold'>
+                                        {product.rating_avg.toFixed(1)}
+                                    </span>
+                                    <p className='text-orange text-lg'>/5</p>
+                                </div>
+                                <RatingStars rating={product.rating_avg} size='xl' />
+                            </div>
+                            {/* 評分篩選按鈕 */}
+                            <div className='flex gap-3 mt-2'>
+                                <button
+                                    className={`px-4 py-2 rounded-sm border ${
+                                        selectedRating === null
+                                            ? 'border-orange text-orange border-2'
+                                            : 'border-gray-300'
+                                    } hover:border-orange hover:text-orange hover:bg-orange/10`}
+                                    onClick={() => setSelectedRating(null)}
+                                >
+                                    全部
+                                </button>
+                                {availableRatings.map((stars) => (
+                                    <button
+                                        key={stars}
+                                        className={`px-4 py-2 rounded-sm border ${
+                                            selectedRating === stars
+                                                ? 'border-orange text-orange border-2'
+                                                : 'border-gray-300'
+                                        } hover:border-orange hover:text-orange hover:bg-orange/10`}
+                                        onClick={() => setSelectedRating(stars)}
+                                    >
+                                        {stars} 星 ({ratingCounts[stars]})
+                                    </button>
+                                ))}
+                            </div>
+                        </div>
+
+                        {/* 評價列表 */}
+                        <div className='mt-4 space-y-4'>
+                            {filteredReviews.map((review) => (
+                                <div
+                                    key={review.id}
+                                    className='p-4 border-b border-gray-300/30'
+                                >
+                                    <div className='flex items-start gap-4'>
+                                        <div className='w-10 h-10 rounded-full bg-gray-300'></div>
+                                        <div className='flex-1'>
+                                            <div className='flex items-center gap-2'>
+                                                <span className='font-medium'>
+                                                    {review.user.nickname ||
+                                                        review.user.name}
+                                                </span>
+                                                <RatingStars
+                                                    rating={review.rating}
+                                                    size='sm'
+                                                />
+                                            </div>
+                                            <p className='text-gray-400 text-sm mt-1'>
+                                                {new Date(
+                                                    review.created_at
+                                                ).toLocaleString()}
+                                            </p>
+                                            <p className='mt-2'>{review.comment}</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                </div>
+                {/* 右側 */}
+                <div className='w-[20%] bg-gray-100/10 shadow-sm rounded-sm shadow-gray-100/30 flex flex-col p-4 gap-4'>
+                    <h2 className='text-xl font-bold'>廣告</h2>
+                </div>
             </div>
         </div>
     );

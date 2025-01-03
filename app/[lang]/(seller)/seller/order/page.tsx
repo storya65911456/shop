@@ -7,5 +7,5 @@ export default async ({
 }) => {
     const { lang } = await params;
 
-    return <div className='w-full h-full bg-white rounded-md p-6'>default</div>;
+    return <div className='w-full h-full bg-gray-100/20'>Page</div>;
 };

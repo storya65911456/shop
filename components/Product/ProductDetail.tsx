@@ -407,34 +407,42 @@ export function ProductDetail({ product, reviews }: ProductDetailProps) {
 
                         {/* 評價列表 */}
                         <div className='mt-4 space-y-4'>
-                            {filteredReviews.map((review) => (
-                                <div
-                                    key={review.id}
-                                    className='p-4 border-b border-gray-300/30'
-                                >
-                                    <div className='flex items-start gap-4'>
-                                        <div className='w-10 h-10 rounded-full bg-gray-300'></div>
-                                        <div className='flex-1'>
-                                            <div className='flex items-center gap-2'>
-                                                <span className='font-medium'>
-                                                    {review.user.nickname ||
-                                                        review.user.name}
-                                                </span>
-                                                <RatingStars
-                                                    rating={review.rating}
-                                                    size='sm'
-                                                />
+                            {product.rating_count > 0 ? (
+                                <>
+                                    {filteredReviews.map((review) => (
+                                        <div
+                                            key={review.id}
+                                            className='p-4 border-b border-gray-300/30'
+                                        >
+                                            <div className='flex items-start gap-4'>
+                                                <div className='w-10 h-10 rounded-full bg-gray-300'></div>
+                                                <div className='flex-1'>
+                                                    <div className='flex items-center gap-2'>
+                                                        <span className='font-medium'>
+                                                            {review.user.nickname ||
+                                                                review.user.name}
+                                                        </span>
+                                                        <RatingStars
+                                                            rating={review.rating}
+                                                            size='sm'
+                                                        />
+                                                    </div>
+                                                    <p className='text-gray-400 text-sm mt-1'>
+                                                        {new Date(
+                                                            review.created_at
+                                                        ).toLocaleString()}
+                                                    </p>
+                                                    <p className='mt-2'>
+                                                        {review.comment}
+                                                    </p>
+                                                </div>
                                             </div>
-                                            <p className='text-gray-400 text-sm mt-1'>
-                                                {new Date(
-                                                    review.created_at
-                                                ).toLocaleString()}
-                                            </p>
-                                            <p className='mt-2'>{review.comment}</p>
                                         </div>
-                                    </div>
-                                </div>
-                            ))}
+                                    ))}
+                                </>
+                            ) : (
+                                <div className='mb-4 text-gray-300'>尚無評價</div>
+                            )}
                         </div>
                     </div>
                 </div>

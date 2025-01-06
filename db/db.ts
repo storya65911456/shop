@@ -9,7 +9,7 @@ export interface Session {
 }
 
 // 建立資料庫連線
-const db: Database = sql('shop.db');
+export const db: Database = sql('shop.db');
 
 // 初始化資料表
 db.exec(`
@@ -146,6 +146,30 @@ db.exec(`
     END;
 `);
 
+// 修改商品分類表的定義
+db.exec(`
+    CREATE TABLE IF NOT EXISTS product_categories (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        name TEXT NOT NULL,
+        description TEXT,
+        parent_id INTEGER,
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+        updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (parent_id) REFERENCES product_categories(id)
+    )
+`);
+
+// 新增商品與分類的關聯表
+db.exec(`
+    CREATE TABLE IF NOT EXISTS product_category_relations (
+        product_id INTEGER NOT NULL,
+        category_id INTEGER NOT NULL,
+        PRIMARY KEY (product_id, category_id),
+        FOREIGN KEY (product_id) REFERENCES products(id) ON DELETE CASCADE,
+        FOREIGN KEY (category_id) REFERENCES product_categories(id) ON DELETE CASCADE
+    )
+`);
+
 const hasProducts = db.prepare('SELECT COUNT(*) as count FROM products').get() as {
     count: number;
 };
@@ -258,6 +282,42 @@ if (hasProducts.count === 0) {
             (2, ${systemUser.id}, 5, '套組很完整，很適合入門'),
             (3, ${systemReviewer.id}, 4, '餅乾很好吃，包裝也很精美'),
             (5, ${systemUser.id}, 5, '衣服質地很好，尺寸也很合身');
+    `);
+
+    // 先插入主分類
+    db.exec(`
+        INSERT INTO product_categories (name, description)
+        VALUES 
+            ('飲品', '咖啡、茶等飲品相關商品'),
+            ('廚房', '廚房相關的工具和用品'),
+            ('食品', '餅乾、零食等食品'),
+            ('文具', '筆、本子等文具用品'),
+            ('服飾', '衣服、配件等服飾商品');
+    `);
+
+    // 再插入子分類，使用 parent_id 關聯到主分類
+    db.exec(`
+        INSERT INTO product_categories (name, description, parent_id)
+        VALUES 
+            ('咖啡', '咖啡相關商品', 1),
+            ('茶飲', '茶類飲品', 1),
+            ('咖啡器具', '咖啡沖煮器具', 2),
+            ('餅乾', '各式餅乾點心', 3),
+            ('零食', '休閒零食', 3),
+            ('書寫工具', '筆類文具', 4),
+            ('上衣', 'T恤、襯衫等', 5),
+            ('褲子', '各式褲裝', 5);
+    `);
+
+    // 修改商品分類關聯
+    db.exec(`
+        INSERT INTO product_category_relations (product_id, category_id)
+        VALUES 
+            (1, 6),  -- 精選咖啡豆 -> 咖啡
+            (2, 8),  -- 手沖咖啡套組 -> 咖啡器具
+            (3, 9),  -- 職人手作餅乾 -> 餅乾
+            (4, 11), -- 自動鉛筆 -> 書寫工具
+            (5, 12); -- 純棉T恤 -> 上衣
     `);
 }
 

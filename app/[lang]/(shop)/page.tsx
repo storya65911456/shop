@@ -2,7 +2,13 @@ import Carousel from '@/components/Carousel';
 
 import { verifyAuth } from '@/lib/auth';
 import { getDictionary } from '@/lib/dictionaries';
-import { getAllProducts, Product } from '@/lib/product';
+import {
+    formatCategoryPath,
+    getAllProducts,
+    getDirectChildren,
+    getMainCategories,
+    Product
+} from '@/lib/product';
 import Image from 'next/image';
 import Link from 'next/link';
 
@@ -50,11 +56,12 @@ const slides = [
     }
 ];
 
-export default async ({ params }: PageProps) => {
+export default async function ShopPage({ params }: PageProps) {
     const { lang } = await params;
     const dict = await getDictionary(lang as 'en' | 'zh-TW');
 
     const products = getAllProducts();
+    const mainCategories = getMainCategories();
 
     return (
         <main className='w-[1280px] mx-auto px-4 py-6 overflow-auto whitespace-nowrap'>
@@ -73,14 +80,22 @@ export default async ({ params }: PageProps) => {
             {/* 商品分類 */}
             <section className='mb-8'>
                 <div className='grid grid-cols-10 gap-4'>
-                    {Array.from({ length: 10 }).map((_, i) => (
-                        <div key={i} className='text-center cursor-pointer'>
-                            <div className='bg-gray-100 rounded-md p-8 mb-2 transition ease-in-out delay-100 hover:-translate-y-1 hover:scale-110 duration-300'>
-                                {/* 分類圖標 */}
+                    {mainCategories.map((category) => {
+                        console.log(category);
+                        return (
+                            <div
+                                key={category.id}
+                                className='text-center cursor-pointer group relative'
+                            >
+                                <Link href={`/${lang}/category/${category.id}`}>
+                                    <div className='bg-gray-100 rounded-md p-8 mb-2 transition ease-in-out delay-100 hover:-translate-y-1 hover:scale-110 duration-300'>
+                                        {/* 分類圖標 */}
+                                    </div>
+                                    <span>{category.name}</span>
+                                </Link>
                             </div>
-                            <span>分類 {i + 1}</span>
-                        </div>
-                    ))}
+                        );
+                    })}
                 </div>
             </section>
 
@@ -91,9 +106,8 @@ export default async ({ params }: PageProps) => {
                     {products.map((product) => (
                         <Link
                             key={product.id}
-                            href={`/${lang}/${product.id}`}
-                            className='border rounded-nd overflow-hidden hover:shadow-lg transition-shadow hover:shadow-orange
-                            hover:scale-105'
+                            href={`/${lang}//${product.id}`}
+                            className='border rounded-nd overflow-hidden hover:shadow-lg transition-shadow hover:shadow-orange hover:scale-105'
                         >
                             <div className='aspect-square bg-gray-100'>
                                 {/* 商品圖片 */}
@@ -113,4 +127,4 @@ export default async ({ params }: PageProps) => {
             </section>
         </main>
     );
-};
+}

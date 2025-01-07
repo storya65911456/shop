@@ -1,10 +1,10 @@
 'use client';
 
+import { LanguageDropdown } from '@/components/LanguageDropdown';
 import { Dictionary, Locale } from '@/lib/dictionaries';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { SiShopee } from 'react-icons/si';
-import { LanguageDropdown } from './LanguageDropdown';
 
 interface SellerHeaderProps {
     lang: Locale;

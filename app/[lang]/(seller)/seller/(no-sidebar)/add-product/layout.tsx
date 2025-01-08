@@ -1,5 +1,5 @@
 import { SellerHeader } from '@/components/Seller/SellerHeader';
-import { WritingTips } from './components/WritingTips';
+import { WritingTips } from '@/components/Seller/WritingTips';
 import { AddProductProvider } from './contexts/AddProductContext';
 
 import { getDictionary } from '@/lib/dictionaries';
@@ -22,7 +22,7 @@ export default async ({ children, params }: accountLayoutProps) => {
                 <SellerHeader lang={lang as 'en' | 'zh-TW'} dict={dict} />
 
                 <div className='flex-1 flex overflow-hidden mt-1 bg-gray-100/10 shadow-gray-800 shadow-inner'>
-                    <div className='w-[320px] h-[370px] flex py-4 pl-6'>
+                    <div className='w-[320px] h-fit flex py-4 pl-6'>
                         <WritingTips />
                     </div>
 

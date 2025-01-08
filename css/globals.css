@@ -75,3 +75,11 @@ body {
         scrollbar-color: #505050 transparent;
     }
 }
+
+/* 為所有區塊設置滾動邊距 */
+#basic,
+#sales,
+#shipping,
+#other {
+    scroll-margin-top: 113px;
+}

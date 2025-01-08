@@ -23,7 +23,7 @@ export const SellerHeader = ({ lang, dict }: SellerHeaderProps) => {
         breadcrumbs.push({
             name: '賣家中心',
 
-            path: `/${lang}/seller`
+            path: `/${lang}/seller/dashboard`
         });
 
         // 根據路徑映射顯示名稱

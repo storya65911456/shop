@@ -10,7 +10,8 @@ const sections = [
     { id: 'basic', name: '基本資訊' },
     { id: 'sales', name: '銷售資訊' },
     { id: 'shipping', name: '運費' },
-    { id: 'other', name: '其他' }
+    { id: 'other', name: '其他' },
+    { id: 'saveForm', name: '儲存' }
 ];
 
 export default function AddProductPage() {
@@ -18,6 +19,7 @@ export default function AddProductPage() {
     const [images, setImages] = useState<File[]>([]);
     const [title, setTitle] = useState('');
     const [category, setCategory] = useState('');
+    const [price, setPrice] = useState('');
     const [description, setDescription] = useState('');
     const [video, setVideo] = useState<File | null>(null);
     const [activeSection, setActiveSection] = useState('basic');
@@ -56,7 +58,7 @@ export default function AddProductPage() {
             },
             {
                 threshold: 0.5,
-                rootMargin: '-80px 0px -80px 0px'
+                rootMargin: '-80px 0px 0px 0px'
             }
         );
 
@@ -315,6 +317,31 @@ export default function AddProductPage() {
                         />
                     </div>
                 </div>
+                {/* 商品價格選擇區 */}
+                <div className='mb-6 flex flex-row gap-4'>
+                    {/* 左邊 */}
+                    <div className='flex items-center justify-end mb-2 w-[150px]'>
+                        <span className='text-red-500 mr-1'>*</span>
+                        <span>商品價格</span>
+                    </div>
+                    {/* 右邊 */}
+                    <div className='w-[200px] relative'>
+                        <span className='absolute left-3 top-1/2 -translate-y-1/2 text-gray-400'>
+                            NT$
+                        </span>
+                        <input
+                            type='text'
+                            value={price}
+                            onChange={(e) => {
+                                // 只允許輸入數字
+                                const value = e.target.value.replace(/[^\d]/g, '');
+                                setPrice(value);
+                            }}
+                            className='w-full p-2 pl-12 bg-gray-200/20 border rounded-md focus:outline-none focus:border-[#ee4d2d] text-white'
+                            placeholder='請輸入'
+                        />
+                    </div>
+                </div>
 
                 {/* 銷售資訊表單內容 */}
             </div>
@@ -335,6 +362,23 @@ export default function AddProductPage() {
             >
                 <h2 className='text-2xl font-medium mb-6'>其他</h2>
                 {/* 其他設定表單內容 */}
+            </div>
+            {/* 儲存表單 */}
+            <div
+                id='saveForm'
+                className='bg-black shadow-md shadow-orange rounded-md p-4 h-fit'
+            >
+                <div className='flex justify-end gap-4'>
+                    <button className='p-2 text-gray-400 hover:text-gray-200 transition-colors duration-200'>
+                        取消
+                    </button>
+                    <button className='p-2 text-gray-400 hover:text-gray-200 transition-colors duration-200'>
+                        儲存並下架
+                    </button>
+                    <button className='p-2 bg-[#ee4d2d] text-white rounded-sm hover:bg-[#ff6b4d] transition-colors duration-200'>
+                        儲存並上架
+                    </button>
+                </div>
             </div>
         </div>
     );

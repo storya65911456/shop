@@ -37,27 +37,46 @@ export function VariationSelector({
 
     // 生成規格組合
     useEffect(() => {
-        if (variations.length === 0) {
-            setCombinations([]);
-            return;
-        }
-
         const generateCombinations = () => {
             const colorVariation = variations.find((v) => v.name === '顏色');
             const sizeVariation = variations.find((v) => v.name === '尺寸');
 
-            if (!colorVariation?.options.length) return [];
+            // 如果沒有任何規格，返回空數組
+            if (!colorVariation?.options.length && !sizeVariation?.options.length) {
+                return [];
+            }
 
-            // 為每個顏色創建對應的尺寸選項
-            const result: VariationCombination[] = colorVariation.options.map(
-                (color) => ({
+            let result: VariationCombination[] = [];
+
+            // 如果只有尺寸規格
+            if (sizeVariation?.options.length && !colorVariation?.options.length) {
+                result = [
+                    {
+                        color: '-', // 顏色欄位顯示 '-'
+                        sizes: sizeVariation.options.map((size) => ({
+                            size,
+                            stock: '0'
+                        }))
+                    }
+                ];
+            }
+            // 如果只有顏色規格
+            else if (colorVariation?.options.length && !sizeVariation?.options.length) {
+                result = colorVariation.options.map((color) => ({
                     color,
-                    sizes: sizeVariation?.options.map((size) => ({
+                    sizes: [{ size: '-', stock: '0' }] // 尺寸欄位顯示 '-'
+                }));
+            }
+            // 如果同時有顏色和尺寸規格
+            else if (colorVariation?.options.length && sizeVariation?.options.length) {
+                result = colorVariation.options.map((color) => ({
+                    color,
+                    sizes: sizeVariation.options.map((size) => ({
                         size,
                         stock: '0'
-                    })) || [{ size: '', stock: '0' }] // 如果沒有尺寸選項，至少創建一個空選項
-                })
-            );
+                    }))
+                }));
+            }
 
             return result;
         };
@@ -264,7 +283,8 @@ export function VariationSelector({
             )}
 
             {/* 規格組合表格 */}
-            {combinations.length > 0 && (
+            {(combinations.length > 0 ||
+                variations.some((v) => v.name === '尺寸' && v.options.length > 0)) && (
                 <div className='overflow-x-auto'>
                     <table className='w-full border-collapse'>
                         <thead>
@@ -317,6 +337,7 @@ export function VariationSelector({
                                                     }}
                                                     className='w-full bg-transparent border-b border-gray-600 focus:border-[#ee4d2d] outline-none px-1'
                                                     placeholder='0'
+                                                    min='0'
                                                 />
                                             </td>
                                         </tr>

@@ -1,5 +1,6 @@
 'use client';
 
+import { CategorySelector } from '@/components/Seller/CategorySelector';
 import { Variation, VariationSelector } from '@/components/Seller/VariationSelector';
 import Image from 'next/image';
 import { useCallback, useEffect, useState } from 'react';
@@ -14,39 +15,65 @@ const sections = [
     { id: 'saveForm', name: '儲存' }
 ];
 
+// 定義商品資料介面
+interface ProductData {
+    images: File[];
+    title: string;
+    categories: string[];
+    description: string;
+    video: File | null;
+    variations: Variation[];
+    stock: string;
+    price: string;
+}
+
 export default function AddProductPage() {
     const { updateChecklistItem } = useAddProduct();
-    const [images, setImages] = useState<File[]>([]);
-    const [title, setTitle] = useState('');
-    const [category, setCategory] = useState('');
-    const [price, setPrice] = useState('');
-    const [description, setDescription] = useState('');
-    const [video, setVideo] = useState<File | null>(null);
     const [activeSection, setActiveSection] = useState('basic');
-    const [variations, setVariations] = useState<Variation[]>([]);
 
-    // 監聽圖片數量變化
-    useEffect(() => {
-        updateChecklistItem('images', images.length >= 3);
-    }, [images.length]);
+    // 使用單一狀態管理所有商品資料
+    const [productData, setProductData] = useState<ProductData>({
+        images: [],
+        title: '',
+        categories: [],
+        description: '',
+        video: null,
+        variations: [],
+        stock: '0',
+        price: ''
+    });
 
-    // 監聽標題長度變化
-    useEffect(() => {
-        updateChecklistItem('title', title.length >= 25 && title.length <= 100);
-    }, [title.length]);
+    // 更新商品資料的輔助函數
+    const updateProductData = (field: keyof ProductData, value: any) => {
+        setProductData((prev) => ({
+            ...prev,
+            [field]: value
+        }));
+    };
 
-    // 監聽類別狀態變化
-    useEffect(() => {
-        updateChecklistItem('category', !!category);
-    }, [category]);
-
-    // 監聽影片狀態�化
-    useEffect(() => {
-        if (video) {
-            updateChecklistItem('video', true);
+    // 處理圖片上傳
+    const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+        if (e.target.files) {
+            const newImages = Array.from(e.target.files);
+            updateProductData('images', [...productData.images, ...newImages]);
         }
-    }, [video]);
+    };
 
+    // 處理影片上傳
+    const handleVideoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+        if (e.target.files && e.target.files[0]) {
+            updateProductData('video', e.target.files[0]);
+        }
+    };
+
+    // 處理刪除圖片
+    const handleDeleteImage = (index: number) => {
+        const newImages = [...productData.images];
+        newImages.splice(index, 1);
+        updateProductData('images', newImages);
+    };
+
+    // 監聽滾動區塊
     useEffect(() => {
         const observer = new IntersectionObserver(
             (entries) => {
@@ -72,6 +99,7 @@ export default function AddProductPage() {
         };
     }, []);
 
+    // 滾動到指定區塊
     const scrollToSection = (sectionId: string) => {
         const element = document.getElementById(sectionId);
         if (element) {
@@ -79,28 +107,73 @@ export default function AddProductPage() {
         }
     };
 
-    // 處理圖片上傳
-    const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-        if (e.target.files) {
-            const newImages = Array.from(e.target.files);
-            setImages((prev) => [...prev, ...newImages]);
-        }
-    };
+    // 使用 useCallback 記憶化檢查函數
+    const checkProductData = useCallback(() => {
+        const { images, title, categories, video, description } = productData;
 
-    // 處理影片上傳
-    const handleVideoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-        if (e.target.files && e.target.files[0]) {
-            setVideo(e.target.files[0]);
-        }
-    };
+        const checkItems = [
+            {
+                id: 'images',
+                isCompleted: images.length >= 3
+            },
+            {
+                id: 'title',
+                isCompleted: title.length >= 25 && title.length <= 100
+            },
+            {
+                id: 'category',
+                isCompleted: categories.length > 0
+            },
+            {
+                id: 'video',
+                isCompleted: !!video
+            },
+            {
+                id: 'description',
+                isCompleted: description.length >= 100 || images.length > 0
+            }
+        ];
 
-    // 添加刪除圖片的處理函數
-    const handleDeleteImage = (index: number) => {
-        setImages((prev) => {
-            const newImages = [...prev];
-            newImages.splice(index, 1);
-            return newImages;
+        checkItems.forEach(({ id, isCompleted }) => {
+            updateChecklistItem(id, isCompleted);
         });
+    }, [
+        productData.images.length,
+        productData.title.length,
+        productData.categories.length,
+        productData.video,
+        productData.description.length,
+        updateChecklistItem
+    ]);
+
+    // 使用 useEffect 監聽商品資料變化
+    useEffect(() => {
+        checkProductData();
+    }, [checkProductData]);
+
+    // 處理表單提交
+    const handleSubmit = async () => {
+        try {
+            // 驗證必填欄位
+            if (productData.title.length < 25 || productData.title.length > 100) {
+                throw new Error('商品名稱字數需介於 25~100 字之間');
+            }
+            if (productData.categories.length === 0) {
+                throw new Error('請選擇商品類別');
+            }
+            if (productData.description.length < 100 && productData.images.length === 0) {
+                throw new Error('商品描述需填入至少 100 個文字或是 1 張圖片');
+            }
+            if (!productData.price) {
+                throw new Error('請輸入商品價格');
+            }
+
+            // TODO: 實作提交邏輯
+            console.log('提交的商品資料：', productData);
+        } catch (error) {
+            console.error('提交失敗：', error);
+            // TODO: 顯示錯誤訊息給用戶
+        }
     };
 
     return (
@@ -155,13 +228,13 @@ export default function AddProductPage() {
                                     <div className='text-4xl text-gray-400'>+</div>
                                     <div className='text-sm text-gray-500'>
                                         新增圖片
-                                        <br />({images.length}/9)
+                                        <br />({productData.images.length}/9)
                                     </div>
                                 </div>
                             </label>
 
                             {/* 已上傳的圖片預覽 */}
-                            {images.map((image, index) => (
+                            {productData.images.map((image, index) => (
                                 <div
                                     key={index}
                                     className='relative w-[120px] h-[120px] group'
@@ -242,32 +315,30 @@ export default function AddProductPage() {
                     <div className='flex flex-col gap-2'>
                         <input
                             type='text'
-                            value={title}
-                            onChange={(e) => setTitle(e.target.value)}
+                            value={productData.title}
+                            name='title'
+                            onChange={(e) => updateProductData('title', e.target.value)}
                             className='w-[700px] bg-gray-200/20 p-2 border rounded-md focus:outline-none focus:border-[#ee4d2d]'
                             placeholder='商品名稱 + 類型 + 重要功能(材質 / 顏色 / 尺寸 / 規格)'
                         />
                         <div className='text-right text-sm text-gray-500'>
-                            {title.length}/100
+                            {productData.title.length}/100
                         </div>
                     </div>
                 </div>
 
                 {/* 商品類別輸入區 */}
                 <div className='mb-6 flex flex-row gap-4'>
-                    {/* 左邊 */}
                     <div className='flex items-center justify-end mb-2 w-[150px]'>
                         <span className='text-red-500 mr-1'>*</span>
                         <span>類別</span>
                     </div>
-                    {/* 右邊 */}
                     <div className='w-[700px] flex flex-col gap-2'>
-                        <input
-                            type='text'
-                            value={category}
-                            onChange={(e) => setCategory(e.target.value)}
-                            className='w-full p-2 bg-gray-200/20 border rounded-md focus:outline-none focus:border-[#ee4d2d] text-black'
-                            placeholder='選擇商品類別'
+                        <CategorySelector
+                            value={productData.categories}
+                            onChange={(categories) =>
+                                updateProductData('categories', categories)
+                            }
                         />
                     </div>
                 </div>
@@ -282,14 +353,19 @@ export default function AddProductPage() {
                     {/* 右邊 */}
                     <div className='w-[700px] flex flex-col gap-2'>
                         <textarea
-                            value={description}
-                            onChange={(e) => setDescription(e.target.value)}
+                            value={productData.description}
+                            name='description'
+                            onChange={(e) =>
+                                updateProductData('description', e.target.value)
+                            }
                             className='w-full h-[200px] bg-gray-200/20 p-2 border rounded-md focus:outline-none focus:border-[#ee4d2d] resize-none'
                             placeholder='請輸入商品描述'
                         />
 
                         <div className='flex text-sm justify-end'>
-                            <div className='text-gray-500'>{description.length}/3000</div>
+                            <div className='text-gray-500'>
+                                {productData.description.length}/3000
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -312,11 +388,38 @@ export default function AddProductPage() {
                     {/* 右邊 */}
                     <div className='w-[700px]'>
                         <VariationSelector
-                            variations={variations}
-                            onVariationsChange={setVariations}
+                            variations={productData.variations}
+                            onVariationsChange={(variations) =>
+                                updateProductData('variations', variations)
+                            }
                         />
                     </div>
                 </div>
+
+                {/* 當沒有規格時顯示的庫存數量輸入框 */}
+                {productData.variations.length === 0 && (
+                    <div className='mb-6 flex flex-row gap-4'>
+                        {/* 左邊 */}
+                        <div className='flex items-center justify-end mb-2 w-[150px]'>
+                            <span className='text-red-500 mr-1'>*</span>
+                            <span>庫存數量</span>
+                        </div>
+                        {/* 右邊 */}
+                        <div className='w-[200px]'>
+                            <input
+                                type='number'
+                                value={productData.stock}
+                                onChange={(e) =>
+                                    updateProductData('stock', e.target.value)
+                                }
+                                className='w-full p-2 bg-gray-200/20 border rounded-md focus:outline-none focus:border-[#ee4d2d] text-white'
+                                placeholder='請輸入'
+                                min='0'
+                            />
+                        </div>
+                    </div>
+                )}
+
                 {/* 商品價格選擇區 */}
                 <div className='mb-6 flex flex-row gap-4'>
                     {/* 左邊 */}
@@ -331,11 +434,12 @@ export default function AddProductPage() {
                         </span>
                         <input
                             type='text'
-                            value={price}
+                            value={productData.price}
+                            name='price'
                             onChange={(e) => {
                                 // 只允許輸入數字
                                 const value = e.target.value.replace(/[^\d]/g, '');
-                                setPrice(value);
+                                updateProductData('price', value);
                             }}
                             className='w-full p-2 pl-12 bg-gray-200/20 border rounded-md focus:outline-none focus:border-[#ee4d2d] text-white'
                             placeholder='請輸入'
@@ -375,7 +479,10 @@ export default function AddProductPage() {
                     <button className='p-2 text-gray-400 hover:text-gray-200 transition-colors duration-200'>
                         儲存並下架
                     </button>
-                    <button className='p-2 bg-[#ee4d2d] text-white rounded-sm hover:bg-[#ff6b4d] transition-colors duration-200'>
+                    <button
+                        onClick={handleSubmit}
+                        className='p-2 bg-[#ee4d2d] text-white rounded-sm hover:bg-[#ff6b4d] transition-colors duration-200'
+                    >
                         儲存並上架
                     </button>
                 </div>

@@ -18,7 +18,10 @@ export interface VariationCombination {
 
 interface VariationSelectorProps {
     variations: Variation[];
-    onVariationsChange: (variations: Variation[]) => void;
+    onVariationsChange: (
+        variations: Variation[],
+        combinations?: VariationCombination[]
+    ) => void;
 }
 
 const VARIATION_TYPES = [
@@ -42,7 +45,7 @@ export function VariationSelector({
             const sizeVariation = variations.find((v) => v.name === '尺寸');
 
             // 如果沒有任何規格，返回空數組
-            if (!colorVariation?.options.length && !sizeVariation?.options.length) {
+            if (!sizeVariation?.options.length && !colorVariation?.options.length) {
                 return [];
             }
 
@@ -52,7 +55,7 @@ export function VariationSelector({
             if (sizeVariation?.options.length && !colorVariation?.options.length) {
                 result = [
                     {
-                        color: '-', // 顏色欄位顯示 '-'
+                        color: '-',
                         sizes: sizeVariation.options.map((size) => ({
                             size,
                             stock: '0'
@@ -64,7 +67,7 @@ export function VariationSelector({
             else if (colorVariation?.options.length && !sizeVariation?.options.length) {
                 result = colorVariation.options.map((color) => ({
                     color,
-                    sizes: [{ size: '-', stock: '0' }] // 尺寸欄位顯示 '-'
+                    sizes: [{ size: '-', stock: '0' }]
                 }));
             }
             // 如果同時有顏色和尺寸規格
@@ -81,7 +84,9 @@ export function VariationSelector({
             return result;
         };
 
-        setCombinations(generateCombinations());
+        const newCombinations = generateCombinations();
+        setCombinations(newCombinations);
+        onVariationsChange(variations, newCombinations);
     }, [variations]);
 
     // 處理點擊外部關閉
@@ -135,6 +140,14 @@ export function VariationSelector({
         newVariations[variationIndex].options.push(newOption.trim());
         onVariationsChange(newVariations);
         setNewOption('');
+    };
+
+    // 處理庫存數量變更
+    const handleStockChange = (colorIndex: number, sizeIndex: number, value: string) => {
+        const newCombinations = [...combinations];
+        newCombinations[colorIndex].sizes[sizeIndex].stock = value;
+        setCombinations(newCombinations);
+        onVariationsChange(variations, newCombinations);
     };
 
     return (
@@ -304,11 +317,11 @@ export function VariationSelector({
                             </tr>
                         </thead>
                         <tbody>
-                            {combinations.map((combination, index) => (
+                            {combinations.map((combination, colorIndex) => (
                                 <>
                                     {combination.sizes.map((sizeOption, sizeIndex) => (
                                         <tr
-                                            key={`${index}-${sizeIndex}`}
+                                            key={`${colorIndex}-${sizeIndex}`}
                                             className='hover:bg-gray-800/30'
                                         >
                                             {sizeIndex === 0 && (
@@ -326,18 +339,15 @@ export function VariationSelector({
                                                 <input
                                                     type='number'
                                                     value={sizeOption.stock}
-                                                    onChange={(e) => {
-                                                        const newCombinations = [
-                                                            ...combinations
-                                                        ];
-                                                        newCombinations[index].sizes[
-                                                            sizeIndex
-                                                        ].stock = e.target.value;
-                                                        setCombinations(newCombinations);
-                                                    }}
-                                                    className='w-full bg-transparent border-b border-gray-600 focus:border-[#ee4d2d] outline-none px-1'
-                                                    placeholder='0'
+                                                    onChange={(e) =>
+                                                        handleStockChange(
+                                                            colorIndex,
+                                                            sizeIndex,
+                                                            e.target.value
+                                                        )
+                                                    }
                                                     min='0'
+                                                    className='w-full bg-transparent border-b border-gray-600 focus:border-[#ee4d2d] outline-none px-1'
                                                 />
                                             </td>
                                         </tr>

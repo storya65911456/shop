@@ -1,10 +1,11 @@
 'use client';
 
+import { addProductActions } from '@/actions/add-products';
 import { CategorySelector } from '@/components/Seller/CategorySelector';
 import { Variation, VariationSelector } from '@/components/Seller/VariationSelector';
 import Image from 'next/image';
-import { useCallback, useEffect, useState } from 'react';
-import { FaImage, FaTrash } from 'react-icons/fa6';
+import { useActionState, useEffect, useState } from 'react';
+import { FaTrash } from 'react-icons/fa6';
 import { useAddProduct } from './contexts/AddProductContext';
 
 const sections = [
@@ -15,64 +16,12 @@ const sections = [
     { id: 'saveForm', name: '儲存' }
 ];
 
-// 定義商品資料介面
-interface ProductData {
-    images: File[];
-    title: string;
-    categories: string[];
-    description: string;
-    video: File | null;
-    variations: Variation[];
-    stock: string;
-    price: string;
-}
-
 export default function AddProductPage() {
-    const { updateChecklistItem } = useAddProduct();
+    const { productData, updateProductData, validateField } = useAddProduct();
     const [activeSection, setActiveSection] = useState('basic');
-
-    // 使用單一狀態管理所有商品資料
-    const [productData, setProductData] = useState<ProductData>({
-        images: [],
-        title: '',
-        categories: [],
-        description: '',
-        video: null,
-        variations: [],
-        stock: '0',
-        price: ''
+    const [state, formAction] = useActionState(addProductActions, {
+        error: ''
     });
-
-    // 更新商品資料的輔助函數
-    const updateProductData = (field: keyof ProductData, value: any) => {
-        setProductData((prev) => ({
-            ...prev,
-            [field]: value
-        }));
-    };
-
-    // 處理圖片上傳
-    const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-        if (e.target.files) {
-            const newImages = Array.from(e.target.files);
-            updateProductData('images', [...productData.images, ...newImages]);
-        }
-    };
-
-    // 處理影片上傳
-    const handleVideoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-        if (e.target.files && e.target.files[0]) {
-            updateProductData('video', e.target.files[0]);
-        }
-    };
-
-    // 處理刪除圖片
-    const handleDeleteImage = (index: number) => {
-        const newImages = [...productData.images];
-        newImages.splice(index, 1);
-        updateProductData('images', newImages);
-    };
-
     // 監聽滾動區塊
     useEffect(() => {
         const observer = new IntersectionObserver(
@@ -83,10 +32,7 @@ export default function AddProductPage() {
                     }
                 });
             },
-            {
-                threshold: 0.5,
-                rootMargin: '-80px 0px 0px 0px'
-            }
+            { threshold: 0.5, rootMargin: '-80px 0px 0px 0px' }
         );
 
         sections.forEach(({ id }) => {
@@ -94,97 +40,63 @@ export default function AddProductPage() {
             if (element) observer.observe(element);
         });
 
-        return () => {
-            observer.disconnect();
-        };
+        return () => observer.disconnect();
     }, []);
 
-    // 滾動到指定區塊
+    const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+        if (e.target.files) {
+            const newImages = Array.from(e.target.files);
+            updateProductData('images', [...productData.images, ...newImages]);
+        }
+    };
+
+    const handleVideoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+        if (e.target.files?.[0]) {
+            updateProductData('video', e.target.files[0]);
+            validateField('video');
+        }
+    };
+
+    const handleDeleteImage = (index: number) => {
+        const newImages = [...productData.images];
+        newImages.splice(index, 1);
+        updateProductData('images', newImages);
+    };
+
     const scrollToSection = (sectionId: string) => {
-        const element = document.getElementById(sectionId);
-        if (element) {
-            element.scrollIntoView({ behavior: 'smooth' });
-        }
+        document.getElementById(sectionId)?.scrollIntoView({ behavior: 'smooth' });
     };
 
-    // 使用 useCallback 記憶化檢查函數
-    const checkProductData = useCallback(() => {
-        const { images, title, categories, video, description } = productData;
+    // 添加導航按鈕點擊處理函數
+    const handleNavClick = (e: React.MouseEvent, sectionId: string) => {
+        e.preventDefault(); // 阻止表單提交
+        scrollToSection(sectionId);
+    };
 
-        const checkItems = [
-            {
-                id: 'images',
-                isCompleted: images.length >= 3
-            },
-            {
-                id: 'title',
-                isCompleted: title.length >= 25 && title.length <= 100
-            },
-            {
-                id: 'category',
-                isCompleted: categories.length > 0
-            },
-            {
-                id: 'video',
-                isCompleted: !!video
-            },
-            {
-                id: 'description',
-                isCompleted: description.length >= 100 || images.length > 0
-            }
-        ];
+    // 添加取消按鈕處理函數
+    const handleCancel = (e: React.MouseEvent) => {
+        e.preventDefault(); // 阻止表單提交
+        // 處理取消邏輯
+    };
 
-        checkItems.forEach(({ id, isCompleted }) => {
-            updateChecklistItem(id, isCompleted);
-        });
-    }, [
-        productData.images.length,
-        productData.title.length,
-        productData.categories.length,
-        productData.video,
-        productData.description.length,
-        updateChecklistItem
-    ]);
-
-    // 使用 useEffect 監聽商品資料變化
     useEffect(() => {
-        checkProductData();
-    }, [checkProductData]);
-
-    // 處理表單提交
-    const handleSubmit = async () => {
-        try {
-            // 驗證必填欄位
-            if (productData.title.length < 25 || productData.title.length > 100) {
-                throw new Error('商品名稱字數需介於 25~100 字之間');
-            }
-            if (productData.categories.length === 0) {
-                throw new Error('請選擇商品類別');
-            }
-            if (productData.description.length < 100 && productData.images.length === 0) {
-                throw new Error('商品描述需填入至少 100 個文字或是 1 張圖片');
-            }
-            if (!productData.price) {
-                throw new Error('請輸入商品價格');
-            }
-
-            // TODO: 實作提交邏輯
-            console.log('提交的商品資料：', productData);
-        } catch (error) {
-            console.error('提交失敗：', error);
-            // TODO: 顯示錯誤訊息給用戶
+        if (state && typeof state === 'object' && 'error' in state && state.error) {
+            alert(state.error);
+        } else if (state && typeof state === 'object' && 'success' in state) {
+            alert('提交成功');
         }
-    };
+    }, [state]);
 
     return (
-        <div className='space-y-6 min-w-[1000px]'>
+        <form action={formAction} className='space-y-6 min-w-[1000px]'>
             {/* 導覽列 */}
             <nav className='sticky top-0 bg-black z-10 border-b shadow-md rounded-sm shadow-orange'>
                 <div className='flex gap-4 text-white'>
                     {sections.map((section) => (
                         <button
                             key={section.id}
-                            onClick={() => scrollToSection(section.id)}
+                            type='button'
+                            onClick={(e) => handleNavClick(e, section.id)}
                             className={`px-4 py-3 relative cursor-pointer transition-colors duration-300 ${
                                 activeSection === section.id
                                     ? 'text-[#ee4d2d] font-medium'
@@ -315,8 +227,8 @@ export default function AddProductPage() {
                     <div className='flex flex-col gap-2'>
                         <input
                             type='text'
-                            value={productData.title}
                             name='title'
+                            value={productData.title}
                             onChange={(e) => updateProductData('title', e.target.value)}
                             className='w-[700px] bg-gray-200/20 p-2 border rounded-md focus:outline-none focus:border-[#ee4d2d]'
                             placeholder='商品名稱 + 類型 + 重要功能(材質 / 顏色 / 尺寸 / 規格)'
@@ -336,9 +248,9 @@ export default function AddProductPage() {
                     <div className='w-[700px] flex flex-col gap-2'>
                         <CategorySelector
                             value={productData.categories}
-                            onChange={(categories) =>
-                                updateProductData('categories', categories)
-                            }
+                            onChange={(categories) => {
+                                updateProductData('categories', categories);
+                            }}
                         />
                     </div>
                 </div>
@@ -389,9 +301,12 @@ export default function AddProductPage() {
                     <div className='w-[700px]'>
                         <VariationSelector
                             variations={productData.variations}
-                            onVariationsChange={(variations) =>
-                                updateProductData('variations', variations)
-                            }
+                            onVariationsChange={(variations, combinations) => {
+                                updateProductData('variations', variations);
+                                if (combinations) {
+                                    updateProductData('variationStocks', combinations);
+                                }
+                            }}
                         />
                     </div>
                 </div>
@@ -408,6 +323,7 @@ export default function AddProductPage() {
                         <div className='w-[200px]'>
                             <input
                                 type='number'
+                                name='stock'
                                 value={productData.stock}
                                 onChange={(e) =>
                                     updateProductData('stock', e.target.value)
@@ -473,20 +389,51 @@ export default function AddProductPage() {
                 className='bg-black shadow-md shadow-orange rounded-md p-4 h-fit'
             >
                 <div className='flex justify-end gap-4'>
-                    <button className='p-2 text-gray-400 hover:text-gray-200 transition-colors duration-200'>
+                    <button
+                        type='button'
+                        onClick={handleCancel}
+                        className='p-2 text-gray-400 hover:text-gray-200 transition-colors duration-200'
+                    >
                         取消
                     </button>
-                    <button className='p-2 text-gray-400 hover:text-gray-200 transition-colors duration-200'>
+                    <button
+                        type='button'
+                        onClick={(e) => {
+                            e.preventDefault();
+                            // 處理儲存並下架邏輯
+                        }}
+                        className='p-2 text-gray-400 hover:text-gray-200 transition-colors duration-200'
+                    >
                         儲存並下架
                     </button>
                     <button
-                        onClick={handleSubmit}
+                        type='submit'
                         className='p-2 bg-[#ee4d2d] text-white rounded-sm hover:bg-[#ff6b4d] transition-colors duration-200'
                     >
                         儲存並上架
                     </button>
                 </div>
             </div>
-        </div>
+
+            {/* 添加隱藏的輸入欄位，用於傳遞 JSON 資料 */}
+            <input
+                type='hidden'
+                name='categories'
+                value={JSON.stringify(productData.categories)}
+            />
+            <input
+                type='hidden'
+                name='variations'
+                value={JSON.stringify(productData.variations)}
+            />
+
+            {productData.variationStocks && (
+                <input
+                    type='hidden'
+                    name='variationStocks'
+                    value={JSON.stringify(productData.variationStocks)}
+                />
+            )}
+        </form>
     );
 }

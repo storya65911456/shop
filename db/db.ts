@@ -284,45 +284,20 @@ if (hasProducts.count === 0) {
             (5, ${systemUser.id}, 5, '衣服質地很好，尺寸也很合身');
     `);
 
-    // 先插入主分類
+    // 1. 先插入所有主分類
     db.exec(`
         INSERT INTO product_categories (name, description)
         VALUES 
+            ('女生衣著', '女性服裝相關商品'),
+            ('男生衣著', '男性服裝相關商品'),
             ('飲品', '咖啡、茶等飲品相關商品'),
             ('廚房', '廚房相關的工具和用品'),
             ('食品', '餅乾、零食等食品'),
             ('文具', '筆、本子等文具用品'),
-            ('服飾', '衣服、配件等服飾商品'),
-            ('女生衣著', '女性服裝相關商品'),
-            ('男生衣著', '男性服裝相關商品');
+            ('服飾', '衣服、配件等服飾商品');
     `);
 
-    // 再插入原有子分類
-    db.exec(`
-        INSERT INTO product_categories (name, description, parent_id)
-        VALUES 
-            ('咖啡', '咖啡相關商品', 1),
-            ('茶飲', '茶類飲品', 1),
-            ('咖啡器具', '咖啡沖煮器具', 2),
-            ('餅乾', '各式餅乾點心', 3),
-            ('零食', '休閒零食', 3),
-            ('書寫工具', '筆類文具', 4),
-            ('上衣', 'T恤、襯衫等', 5),
-            ('褲子', '各式褲裝', 5);
-    `);
-
-    // 修改商品分類關聯
-    db.exec(`
-        INSERT INTO product_category_relations (product_id, category_id)
-        VALUES 
-            (1, 6),  -- 精選咖啡豆 -> 咖啡
-            (2, 8),  -- 手沖咖啡套組 -> 咖啡器具
-            (3, 9),  -- 職人手作餅乾 -> 餅乾
-            (4, 11), -- 自動鉛筆 -> 書寫工具
-            (5, 12); -- 純棉T恤 -> 上衣
-    `);
-
-    // 獲取主分類ID
+    // 2. 獲取所有主分類的ID
     const womenClothingId = db
         .prepare('SELECT id FROM product_categories WHERE name = ?')
         .get('女生衣著') as { id: number };
@@ -331,7 +306,41 @@ if (hasProducts.count === 0) {
         .prepare('SELECT id FROM product_categories WHERE name = ?')
         .get('男生衣著') as { id: number };
 
-    // 插入女裝子分類
+    const drinkId = db
+        .prepare('SELECT id FROM product_categories WHERE name = ?')
+        .get('飲品') as { id: number };
+
+    const kitchenId = db
+        .prepare('SELECT id FROM product_categories WHERE name = ?')
+        .get('廚房') as { id: number };
+
+    const foodId = db
+        .prepare('SELECT id FROM product_categories WHERE name = ?')
+        .get('食品') as { id: number };
+
+    const stationeryId = db
+        .prepare('SELECT id FROM product_categories WHERE name = ?')
+        .get('文具') as { id: number };
+
+    const clothingId = db
+        .prepare('SELECT id FROM product_categories WHERE name = ?')
+        .get('服飾') as { id: number };
+
+    // 3. 插入一般商品的子分類
+    db.exec(`
+        INSERT INTO product_categories (name, description, parent_id)
+        VALUES 
+            ('咖啡', '咖啡相關商品', ${drinkId.id}),
+            ('茶飲', '茶類飲品', ${drinkId.id}),
+            ('咖啡器具', '咖啡沖煮器具', ${kitchenId.id}),
+            ('餅乾', '各式餅乾點心', ${foodId.id}),
+            ('零食', '休閒零食', ${foodId.id}),
+            ('書寫工具', '筆類文具', ${stationeryId.id}),
+            ('上衣', 'T恤、襯衫等', ${clothingId.id}),
+            ('褲子', '各式褲裝', ${clothingId.id});
+    `);
+
+    // 4. 插入女裝子分類
     db.exec(`
         INSERT INTO product_categories (name, parent_id)
         VALUES 
@@ -341,12 +350,12 @@ if (hasProducts.count === 0) {
             ('裙裝', ${womenClothingId.id});
     `);
 
-    // 獲取女裝上衣分類ID
+    // 5. 獲取女裝上衣分類ID
     const womenTopsId = db
         .prepare('SELECT id FROM product_categories WHERE name = ? AND parent_id = ?')
         .get('上衣', womenClothingId.id) as { id: number };
 
-    // 插入女裝上衣子分類
+    // 6. 插入女裝上衣子分類
     db.exec(`
         INSERT INTO product_categories (name, parent_id)
         VALUES 
@@ -359,7 +368,7 @@ if (hasProducts.count === 0) {
             ('其他上衣', ${womenTopsId.id});
     `);
 
-    // 插入男裝子分類
+    // 7. 插入男裝子分類
     db.exec(`
         INSERT INTO product_categories (name, parent_id)
         VALUES 
@@ -368,12 +377,12 @@ if (hasProducts.count === 0) {
             ('短褲', ${menClothingId.id});
     `);
 
-    // 獲取男裝上衣分類ID
+    // 8. 獲取男裝上衣分類ID
     const menTopsId = db
         .prepare('SELECT id FROM product_categories WHERE name = ? AND parent_id = ?')
         .get('上衣', menClothingId.id) as { id: number };
 
-    // 插入男裝上衣子分類
+    // 9. 插入男裝上衣子分類
     db.exec(`
         INSERT INTO product_categories (name, parent_id)
         VALUES 
@@ -384,6 +393,17 @@ if (hasProducts.count === 0) {
             ('Polo衫', ${menTopsId.id}),
             ('連帽衣/包臂衣', ${menTopsId.id}),
             ('其他上衣', ${menTopsId.id});
+    `);
+
+    // 10. 修改商品分類關聯
+    db.exec(`
+        INSERT INTO product_category_relations (product_id, category_id)
+        VALUES 
+            (1, (SELECT id FROM product_categories WHERE name = '咖啡')),
+            (2, (SELECT id FROM product_categories WHERE name = '咖啡器具')),
+            (3, (SELECT id FROM product_categories WHERE name = '餅乾')),
+            (4, (SELECT id FROM product_categories WHERE name = '書寫工具')),
+            (5, (SELECT id FROM product_categories WHERE name = '上衣' AND parent_id = ${clothingId.id}));
     `);
 }
 

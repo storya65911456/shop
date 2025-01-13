@@ -1,5 +1,10 @@
 'use server';
 
+import { db } from '@/db/db';
+import { createProduct } from '@/lib/create-product';
+import { revalidatePath } from 'next/cache';
+import { cookies } from 'next/headers';
+
 interface VariationStock {
     color: string;
     sizes: {
@@ -47,15 +52,24 @@ export const addProductActions = async (state: ActionState, formData: FormData) 
             return { error: '請設定有效的庫存數量' };
         }
 
-        const submitData = {
+        // 獲取用戶ID
+
+        // 創建商品
+        await createProduct({
             title,
             description,
+            price: parseFloat(price),
             categories,
-            price,
-            stocks: variations.length > 0 ? variationStocks : stock
-        };
+            stock,
+            variations,
+            variationStocks,
+            userId: 1
+        });
 
-        console.log('提交的資料：', submitData);
+        // 重新驗證商品列表頁面
+        revalidatePath('/');
+        revalidatePath('/seller/products');
+
         return { success: true, error: undefined };
     } catch (error) {
         console.error('提交失敗：', error);

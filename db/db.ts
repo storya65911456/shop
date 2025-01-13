@@ -292,10 +292,12 @@ if (hasProducts.count === 0) {
             ('廚房', '廚房相關的工具和用品'),
             ('食品', '餅乾、零食等食品'),
             ('文具', '筆、本子等文具用品'),
-            ('服飾', '衣服、配件等服飾商品');
+            ('服飾', '衣服、配件等服飾商品'),
+            ('女生衣著', '女性服裝相關商品'),
+            ('男生衣著', '男性服裝相關商品');
     `);
 
-    // 再插入子分類，使用 parent_id 關聯到主分類
+    // 再插入原有子分類
     db.exec(`
         INSERT INTO product_categories (name, description, parent_id)
         VALUES 
@@ -318,6 +320,70 @@ if (hasProducts.count === 0) {
             (3, 9),  -- 職人手作餅乾 -> 餅乾
             (4, 11), -- 自動鉛筆 -> 書寫工具
             (5, 12); -- 純棉T恤 -> 上衣
+    `);
+
+    // 獲取主分類ID
+    const womenClothingId = db
+        .prepare('SELECT id FROM product_categories WHERE name = ?')
+        .get('女生衣著') as { id: number };
+
+    const menClothingId = db
+        .prepare('SELECT id FROM product_categories WHERE name = ?')
+        .get('男生衣著') as { id: number };
+
+    // 插入女裝子分類
+    db.exec(`
+        INSERT INTO product_categories (name, parent_id)
+        VALUES 
+            ('上衣', ${womenClothingId.id}),
+            ('長褲/緊身褲', ${womenClothingId.id}),
+            ('短褲', ${womenClothingId.id}),
+            ('裙裝', ${womenClothingId.id});
+    `);
+
+    // 獲取女裝上衣分類ID
+    const womenTopsId = db
+        .prepare('SELECT id FROM product_categories WHERE name = ? AND parent_id = ?')
+        .get('上衣', womenClothingId.id) as { id: number };
+
+    // 插入女裝上衣子分類
+    db.exec(`
+        INSERT INTO product_categories (name, parent_id)
+        VALUES 
+            ('細肩帶/線肩背心', ${womenTopsId.id}),
+            ('平口背心', ${womenTopsId.id}),
+            ('T恤', ${womenTopsId.id}),
+            ('襯衫', ${womenTopsId.id}),
+            ('Polo衫', ${womenTopsId.id}),
+            ('連帽衣/包臂衣', ${womenTopsId.id}),
+            ('其他上衣', ${womenTopsId.id});
+    `);
+
+    // 插入男裝子分類
+    db.exec(`
+        INSERT INTO product_categories (name, parent_id)
+        VALUES 
+            ('上衣', ${menClothingId.id}),
+            ('長褲', ${menClothingId.id}),
+            ('短褲', ${menClothingId.id});
+    `);
+
+    // 獲取男裝上衣分類ID
+    const menTopsId = db
+        .prepare('SELECT id FROM product_categories WHERE name = ? AND parent_id = ?')
+        .get('上衣', menClothingId.id) as { id: number };
+
+    // 插入男裝上衣子分類
+    db.exec(`
+        INSERT INTO product_categories (name, parent_id)
+        VALUES 
+            ('短袖', ${menTopsId.id}),
+            ('長袖', ${menTopsId.id}),
+            ('T恤', ${menTopsId.id}),
+            ('襯衫', ${menTopsId.id}),
+            ('Polo衫', ${menTopsId.id}),
+            ('連帽衣/包臂衣', ${menTopsId.id}),
+            ('其他上衣', ${menTopsId.id});
     `);
 }
 

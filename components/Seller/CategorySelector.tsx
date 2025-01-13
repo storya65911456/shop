@@ -1,102 +1,54 @@
 'use client';
 
+import { Category, getCategories } from '@/actions/get-categories';
 import { useEffect, useRef, useState } from 'react';
 import { FaAngleRight } from 'react-icons/fa';
 import { FaPen } from 'react-icons/fa6';
-
-interface Category {
-    name: string;
-    children?: Category[];
-}
 
 interface CategorySelectorProps {
     value: string[];
     onChange: (categories: string[]) => void;
 }
 
-// 模擬資料庫中的類別資料
-const CATEGORIES: Category[] = [
-    {
-        name: '女生衣著',
-        children: [
-            {
-                name: '上衣',
-                children: [
-                    { name: '細肩帶/線肩背心' },
-                    { name: '平口背心' },
-                    { name: 'T恤' },
-                    { name: '襯衫' },
-                    { name: 'Polo衫' },
-                    { name: '連帽衣/包臂衣' },
-                    { name: '其他上衣' }
-                ]
-            },
-            {
-                name: '長褲/緊身褲',
-                children: []
-            },
-            { name: '短褲', children: [] },
-            { name: '裙裝', children: [] }
-            // ... 其他子類別
-        ]
-    },
-    {
-        name: '男生衣著',
-        children: [
-            {
-                name: '上衣',
-                children: [
-                    { name: '細肩帶/線肩背心', children: [{ name: '測試' }] },
-                    { name: '平口背心' },
-                    { name: 'T恤' },
-                    { name: '襯衫' },
-                    { name: 'Polo衫' },
-                    { name: '連帽衣/包臂衣' },
-                    { name: '其他上衣' },
-                    { name: 'T恤1' },
-                    { name: '襯衫1' },
-                    { name: 'Polo衫1' },
-                    { name: '連帽衣/包臂衣1' },
-                    { name: '其他上衣1' }
-                ]
-            },
-            {
-                name: '長褲/緊身褲',
-                children: []
-            },
-            { name: '短褲', children: [] },
-            { name: '裙裝', children: [] }
-        ]
-    }
-    // ... 其他主類別
-];
-
 export const CategorySelector = ({ value, onChange }: CategorySelectorProps) => {
     const [isOpen, setIsOpen] = useState(false);
-    const [categories, setCategories] = useState<Category[][]>([CATEGORIES, [], [], []]);
+    const [categories, setCategories] = useState<Category[][]>([[], [], [], []]);
     const [tempValue, setTempValue] = useState<string[]>([]);
     const modalRef = useRef<HTMLDivElement>(null);
+
+    // 初始化分類數據
+    useEffect(() => {
+        const fetchCategories = async () => {
+            const categoryTree = await getCategories();
+            setCategories([categoryTree, [], [], []]);
+        };
+        fetchCategories();
+    }, []);
 
     // 當打開選擇器時，初始化臨時值和類別
     useEffect(() => {
         if (isOpen) {
             setTempValue(value);
-            let currentCategories = CATEGORIES;
-            const newCategories: Category[][] = [CATEGORIES, [], [], []];
+            const initializeCategories = async () => {
+                const categoryTree = await getCategories();
+                let currentCategories = categoryTree;
+                const newCategories: Category[][] = [categoryTree, [], [], []];
 
-            // 遍歷現有的選擇路徑
-            for (let i = 0; i < value.length; i++) {
-                const currentValue = value[i];
-                const nextCategory = currentCategories.find(
-                    (c) => c.name === currentValue
-                );
-                if (nextCategory?.children?.length) {
-                    currentCategories = nextCategory.children;
-                    newCategories[i + 1] = currentCategories;
+                // 遍歷現有的選擇路徑
+                for (let i = 0; i < value.length; i++) {
+                    const currentValue = value[i];
+                    const nextCategory = currentCategories.find(
+                        (c) => c.name === currentValue
+                    );
+                    if (nextCategory?.children?.length) {
+                        currentCategories = nextCategory.children;
+                        newCategories[i + 1] = currentCategories;
+                    }
                 }
-            }
 
-            setCategories(newCategories);
+                setCategories(newCategories);
+            };
+            initializeCategories();
         }
     }, [isOpen, value]);
 

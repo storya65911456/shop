@@ -197,41 +197,39 @@ export function getProductCategoryPath(productId: number): CategoryPathInfo[] {
     const categories = db
         .prepare(
             `
-        SELECT 
-            parent.id as parent_id,
-            parent.name as parent_name,
-            child.id as child_id,
-            child.name as child_name
-        FROM product_category_relations pcr
-        JOIN product_categories child ON pcr.category_id = child.id
-        LEFT JOIN product_categories parent ON child.parent_id = parent.id
-        WHERE pcr.product_id = ?
-    `
+            WITH RECURSIVE category_path AS (
+                -- 從商品關聯的分類開始
+                SELECT 
+                    c.id,
+                    c.name,
+                    c.parent_id,
+                    1 as level
+                FROM product_categories c
+                JOIN product_category_relations pcr ON c.id = pcr.category_id
+                WHERE pcr.product_id = ?
+
+                UNION ALL
+
+                -- 遞迴查找父分類
+                SELECT 
+                    pc.id,
+                    pc.name,
+                    pc.parent_id,
+                    cp.level + 1
+                FROM product_categories pc
+                JOIN category_path cp ON pc.id = cp.parent_id
+            )
+            SELECT id, name, level
+            FROM category_path
+            ORDER BY level DESC
+        `
         )
-        .get(productId) as
-        | {
-              parent_id: number | null;
-              parent_name: string | null;
-              child_id: number;
-              child_name: string;
-          }
-        | undefined;
+        .all(productId) as { id: number; name: string; level: number }[];
 
-    if (!categories) return [];
-
-    const result: CategoryPathInfo[] = [];
-    if (categories.parent_id && categories.parent_name) {
-        result.push({
-            id: categories.parent_id,
-            name: categories.parent_name
-        });
-    }
-    result.push({
-        id: categories.child_id,
-        name: categories.child_name
-    });
-
-    return result;
+    return categories.map((cat) => ({
+        id: cat.id,
+        name: cat.name
+    }));
 }
 
 // 獲取所有主分類
@@ -383,4 +381,91 @@ export function searchProducts(keyword: string): Product[] {
 // 添加一個輔助函數來格式化分類路徑
 export function formatCategoryPath(categoryPath: CategoryPathInfo[]): string {
     return categoryPath.map((category) => category.name).join('/');
+}
+
+// 獲取用戶上架的商品
+export function getProductsByUserId(userId: number): Product[] {
+    const products = db
+        .prepare(
+            `
+            SELECT 
+                p.*,
+                u.name as seller_name,
+                u.nickname as seller_nickname,
+                COALESCE(
+                    (SELECT ROUND(AVG(CAST(rating AS FLOAT)), 1)
+                    FROM product_reviews
+                    WHERE product_id = p.id),
+                    0
+                ) as rating_avg,
+                COALESCE(
+                    (SELECT COUNT(*)
+                    FROM product_reviews
+                    WHERE product_id = p.id),
+                    0
+                ) as rating_count
+            FROM products p
+            LEFT JOIN users u ON p.seller_id = u.id
+            WHERE p.seller_id = ?
+            ORDER BY p.created_at DESC
+        `
+        )
+        .all(userId) as (Product & {
+        seller_name: string;
+        seller_nickname: string | null;
+    })[];
+
+    return products.map((product) => {
+        // 獲取商品變體
+        const variants = db
+            .prepare(`SELECT * FROM product_variants WHERE product_id = ?`)
+            .all(product.id) as ProductVariant[];
+
+        // 獲取分類路徑
+        const categoryPath = getProductCategoryPath(product.id);
+
+        return {
+            ...product,
+            variants,
+            categoryPath,
+            seller: {
+                name: product.seller_name,
+                nickname: product.seller_nickname || undefined
+            }
+        };
+    });
+}
+
+// 刪除商品
+export function deleteProduct(productId: number, userId: number): boolean {
+    try {
+        // 開始交易
+        const transaction = db.transaction(() => {
+            // 檢查商品是否屬於該用戶
+            const product = db
+                .prepare('SELECT seller_id FROM products WHERE id = ?')
+                .get(productId) as { seller_id: number } | undefined;
+
+            if (!product || product.seller_id !== userId) {
+                throw new Error('無權限刪除此商品');
+            }
+
+            // 刪除商品相關數據
+            db.prepare('DELETE FROM product_variants WHERE product_id = ?').run(
+                productId
+            );
+            db.prepare('DELETE FROM product_category_relations WHERE product_id = ?').run(
+                productId
+            );
+            db.prepare('DELETE FROM product_reviews WHERE product_id = ?').run(productId);
+            db.prepare('DELETE FROM products WHERE id = ?').run(productId);
+        });
+
+        // 執行交易
+        transaction();
+        return true;
+    } catch (error) {
+        console.error('刪除商品失敗:', error);
+        return false;
+    }
 }

@@ -48,10 +48,10 @@ export function ProductDetail({ product, reviews }: ProductDetailProps) {
         .sort((a, b) => b - a);
 
     // 在組件中添加一些調試信息
-    console.log('Product ratings:', {
-        avg: product.rating_avg,
-        count: product.rating_count
-    });
+    // console.log('Product ratings:', {
+    //     avg: product.rating_avg,
+    //     count: product.rating_count
+    // });
 
     // 處理數量變更
     const handleQuantityChange = (value: number) => {
@@ -125,11 +125,6 @@ export function ProductDetail({ product, reviews }: ProductDetailProps) {
                             </span>
                         )}
                     </div>
-
-                    {/* 賣家資訊 */}
-                    {/* <div className='mb-6'>
-                        <p>賣家：{product.seller?.nickname || product.seller?.name}</p>
-                    </div> */}
 
                     {/* 商品變體選擇器 */}
                     <div className='flex flex-col gap-8 mt-5'>

@@ -18,7 +18,6 @@ export default async ({ params }: PageProps) => {
     }
 
     const products = getProductsByCategory(parseInt(id));
-    console.log(products);
 
     return (
         <div className='w-[1200px] mx-auto px-4 py-8'>

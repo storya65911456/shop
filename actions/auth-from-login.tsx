@@ -50,6 +50,7 @@ export const signInAction = async (
             provider: 'local'
         });
         await createAuthSession(id);
+        redirect('/login?mode=login');
     } catch (error) {
         const sqliteError = error as SQLiteError;
         if (sqliteError.code === 'SQLITE_CONSTRAINT_UNIQUE') {
@@ -57,8 +58,6 @@ export const signInAction = async (
         }
         throw error;
     }
-
-    return null;
 };
 
 //登入

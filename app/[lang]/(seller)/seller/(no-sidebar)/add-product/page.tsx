@@ -2,7 +2,10 @@
 
 import { addProductActions } from '@/actions/add-products';
 import { CategorySelector } from '@/components/Seller/CategorySelector';
-import { Variation, VariationSelector } from '@/components/Seller/VariationSelector';
+import {
+    Variation,
+    VariationSelector
+} from '@/app/[lang]/(seller)/seller/(no-sidebar)/add-product/components/VariationSelector';
 import Image from 'next/image';
 import { useActionState, useEffect, useState } from 'react';
 import { FaTrash } from 'react-icons/fa6';

@@ -1,5 +1,5 @@
 import { SellerHeader } from '@/components/Seller/SellerHeader';
-import { WritingTips } from '@/components/Seller/WritingTips';
+import { WritingTips } from '@/app/[lang]/(seller)/seller/(no-sidebar)/add-product/components/WritingTips';
 import { AddProductProvider } from './contexts/AddProductContext';
 
 import { getDictionary } from '@/lib/dictionaries';

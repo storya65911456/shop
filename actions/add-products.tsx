@@ -1,6 +1,7 @@
 'use server';
 
 import { db } from '@/db/db';
+import { verifyAuth } from '@/lib/auth';
 import { createProduct } from '@/lib/create-product';
 import { revalidatePath } from 'next/cache';
 import { cookies } from 'next/headers';
@@ -19,6 +20,7 @@ interface ActionState {
 }
 
 export const addProductActions = async (state: ActionState, formData: FormData) => {
+    const { user } = await verifyAuth();
     try {
         const title = formData.get('title') as string;
         const description = formData.get('description') as string;
@@ -53,7 +55,10 @@ export const addProductActions = async (state: ActionState, formData: FormData) 
         }
 
         // 獲取用戶ID
-
+        const userId = user?.id;
+        if (!userId) {
+            return { error: '用戶ID不存在' };
+        }
         // 創建商品
         await createProduct({
             title,
@@ -63,7 +68,7 @@ export const addProductActions = async (state: ActionState, formData: FormData) 
             stock,
             variations,
             variationStocks,
-            userId: 1
+            userId: Number(userId)
         });
 
         // 重新驗證商品列表頁面

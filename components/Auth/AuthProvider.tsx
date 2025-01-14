@@ -13,6 +13,8 @@ export async function AuthProvider({
     const { user } = await verifyAuth();
 
     if (!user) {
+        console.log('redirecting to login');
+
         redirect(redirectTo);
     }
 

@@ -4,17 +4,15 @@ import { MainHeader } from '@/components/MainHeader/MainHeader';
 import '@/css/globals.css';
 import { verifyAuth } from '@/lib/auth';
 import { getDictionary } from '@/lib/dictionaries';
-import { UserData } from '@/lib/user';
-import type { ReactNode } from 'react';
 
-interface ShopLayoutProps {
-    children: ReactNode;
+interface RootLayoutProps {
+    children: React.ReactNode;
     params: Promise<{
         lang: string;
     }>;
 }
 
-export default async ({ children, params }: ShopLayoutProps) => {
+export default async function RootLayout({ children, params }: RootLayoutProps) {
     const { lang } = await params;
     const dict = await getDictionary(lang as 'en' | 'zh-TW');
     const { user } = await verifyAuth();
@@ -29,4 +27,4 @@ export default async ({ children, params }: ShopLayoutProps) => {
             </body>
         </html>
     );
-};
+}

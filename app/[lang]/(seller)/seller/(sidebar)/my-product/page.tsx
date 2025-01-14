@@ -1,11 +1,15 @@
-export default async ({
-    params
-}: {
-    params: Promise<{
-        lang: string;
-    }>;
-}) => {
-    const { lang } = await params;
+import { verifyAuth } from '@/lib/auth';
+import { getProductsByUserId, Product } from '@/lib/product';
+import { MyProductPage } from './components/MyProductPage';
 
-    return <div className='w-full h-full bg-gray-100/20'>my-product</div>;
-};
+// Server Component
+export default async function Page({ params }: { params: Promise<{ lang: string }> }) {
+    const { user } = await verifyAuth();
+
+    if (!user) {
+        return <div>請先登入</div>;
+    }
+
+    const products = getProductsByUserId(Number(user.id));
+    return <MyProductPage products={products} />;
+}

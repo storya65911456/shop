@@ -3,7 +3,7 @@
 import { authFormAction } from '@/actions/auth-from-login';
 import type { Dictionary, Locale } from '@/lib/dictionaries';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
+import { redirect, useRouter } from 'next/navigation';
 import { useActionState, useEffect } from 'react';
 import { FaGithub, FaGoogle } from 'react-icons/fa';
 
@@ -23,7 +23,7 @@ export const AuthForm = ({ dict, lang, mode }: AuthFormProps) => {
 
     useEffect(() => {
         if (state && typeof state === 'object' && 'success' in state) {
-            router.back();
+            redirect('/');
         }
     }, [state, router]);
 

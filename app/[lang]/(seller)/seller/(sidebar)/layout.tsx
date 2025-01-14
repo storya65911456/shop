@@ -1,3 +1,4 @@
+import { AuthProvider } from '@/components/Auth/AuthProvider';
 import { SellerHeader } from '@/components/Seller/SellerHeader';
 import { SellerSidebar } from '@/components/Seller/SellerSidebar';
 
@@ -29,7 +30,7 @@ export default async ({ children, params }: accountLayoutProps) => {
                 {/* 主內容區域 - 可獨立滾動 */}
                 <div className='flex-1 overflow-auto'>
                     <div className='min-h-screen w-full px-6 py-4 mt-1 bg-gray-100/10 shadow-gray-800 shadow-inner'>
-                        {children}
+                        <AuthProvider>{children}</AuthProvider>
                     </div>
                 </div>
             </div>

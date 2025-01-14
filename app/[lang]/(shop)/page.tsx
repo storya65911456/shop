@@ -81,7 +81,6 @@ export default async function ShopPage({ params }: PageProps) {
             <section className='mb-8'>
                 <div className='grid grid-cols-10 gap-4'>
                     {mainCategories.map((category) => {
-                        console.log(category);
                         return (
                             <div
                                 key={category.id}

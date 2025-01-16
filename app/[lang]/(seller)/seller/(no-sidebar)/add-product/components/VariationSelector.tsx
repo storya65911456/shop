@@ -22,6 +22,24 @@ interface VariationSelectorProps {
         variations: Variation[],
         combinations?: VariationCombination[]
     ) => void;
+    defaultStock?: string;
+    onStockChange: (stock: string) => void;
+    variationStocks: {
+        color: string;
+        sizes: {
+            size: string;
+            stock: string;
+        }[];
+    }[];
+    onVariationStocksChange: (
+        stocks: {
+            color: string;
+            sizes: {
+                size: string;
+                stock: string;
+            }[];
+        }[]
+    ) => void;
 }
 
 const VARIATION_TYPES = [
@@ -31,7 +49,11 @@ const VARIATION_TYPES = [
 
 export function VariationSelector({
     variations,
-    onVariationsChange
+    onVariationsChange,
+    defaultStock = '0',
+    onStockChange,
+    variationStocks,
+    onVariationStocksChange
 }: VariationSelectorProps) {
     const [isOpen, setIsOpen] = useState<number | null>(null);
     const [newOption, setNewOption] = useState('');

@@ -53,7 +53,7 @@ export function MyProductPage({ products }: MyProductPageProps) {
                         {/* 操作按鈕 */}
                         <div className='absolute top-2 right-2 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity'>
                             <Link
-                                href={`/seller/edit-product/${product.id}`}
+                                href={`/seller/add-product/${product.id}`}
                                 className='p-2 bg-blue-500 text-white rounded-full hover:bg-blue-600 transition-colors'
                                 title='編輯商品'
                             >

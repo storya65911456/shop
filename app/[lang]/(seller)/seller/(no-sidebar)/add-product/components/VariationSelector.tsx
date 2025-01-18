@@ -245,6 +245,7 @@ export function VariationSelector({
                             )}
                         </div>
                         <button
+                            type='button'
                             onClick={() => removeVariation(variationIndex)}
                             className='text-gray-400 hover:text-[#ee4d2d] p-2'
                         >
@@ -262,6 +263,7 @@ export function VariationSelector({
                                     >
                                         <span>{option}</span>
                                         <button
+                                            type='button'
                                             onClick={() => {
                                                 const newVariations = [...variations];
                                                 newVariations[variationIndex].options =
@@ -287,6 +289,7 @@ export function VariationSelector({
                                     onChange={(e) => setNewOption(e.target.value)}
                                     onKeyPress={(e) => {
                                         if (e.key === 'Enter') {
+                                            e.preventDefault();
                                             addOption(variationIndex);
                                         }
                                     }}
@@ -296,6 +299,7 @@ export function VariationSelector({
                                     className='flex-1 p-2 bg-gray-200/20 border rounded-md focus:outline-none focus:border-[#ee4d2d]'
                                 />
                                 <button
+                                    type='button'
                                     onClick={() => addOption(variationIndex)}
                                     className='px-4 py-2 bg-[#ee4d2d] text-white rounded-md hover:bg-[#ff6b4d]'
                                 >
@@ -309,6 +313,7 @@ export function VariationSelector({
 
             {variations.length < 2 && (
                 <button
+                    type='button'
                     onClick={addVariation}
                     className='flex items-center gap-2 text-[#ee4d2d] hover:text-[#ff6b4d]'
                 >

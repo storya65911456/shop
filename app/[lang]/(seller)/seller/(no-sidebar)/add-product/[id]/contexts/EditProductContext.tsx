@@ -57,16 +57,119 @@ export function EditProductProvider({
         categories: initialProduct.categoryPath?.map((cat) => cat.name) || [],
         description: initialProduct.description,
         video: null,
-        variations: initialProduct.has_variants ? initialProduct.variants || [] : [],
+        variations: initialProduct.has_variants
+            ? (() => {
+                  const variations = [];
+                  // 獲取所有唯一的顏色
+                  const colors = [
+                      ...new Set(
+                          initialProduct.variants
+                              ?.filter((v) => v.color)
+                              .map((v) => v.color)
+                      )
+                  ].filter(Boolean) as string[];
+
+                  // 獲取所有唯一的尺寸
+                  const sizes = [
+                      ...new Set(
+                          initialProduct.variants
+                              ?.filter((v) => v.size)
+                              .map((v) => v.size)
+                      )
+                  ].filter(Boolean) as string[];
+
+                  // 如果有顏色規格，添加顏色變體
+                  if (colors.length > 0) {
+                      variations.push({
+                          name: '顏色',
+                          options: colors
+                      });
+                  }
+
+                  // 如果有尺寸規格，添加尺寸變體
+                  if (sizes.length > 0) {
+                      variations.push({
+                          name: '尺寸',
+                          options: sizes
+                      });
+                  }
+
+                  return variations;
+              })()
+            : [],
         stock: initialProduct.has_variants
             ? '0'
             : String(initialProduct.variants?.[0]?.stock || 0),
         price: String(initialProduct.price),
         variationStocks: initialProduct.has_variants
-            ? initialProduct.variants?.map((v) => ({
-                  color: v.color || '',
-                  sizes: [{ size: v.size || '', stock: String(v.stock) }]
-              })) || []
+            ? (() => {
+                  const stocks = [];
+                  const colors = [
+                      ...new Set(
+                          initialProduct.variants
+                              ?.filter((v) => v.color)
+                              .map((v) => v.color)
+                      )
+                  ].filter(Boolean) as string[];
+
+                  const sizes = [
+                      ...new Set(
+                          initialProduct.variants
+                              ?.filter((v) => v.size)
+                              .map((v) => v.size)
+                      )
+                  ].filter(Boolean) as string[];
+
+                  if (colors.length > 0 && sizes.length > 0) {
+                      // 同時有顏色和尺寸
+                      for (const color of colors) {
+                          const sizeStocks = sizes.map((size) => {
+                              const variant = initialProduct.variants?.find(
+                                  (v) => v.color === color && v.size === size
+                              );
+                              return {
+                                  size,
+                                  stock: String(variant?.stock || 0)
+                              };
+                          });
+                          stocks.push({
+                              color,
+                              sizes: sizeStocks
+                          });
+                      }
+                  } else if (colors.length > 0) {
+                      // 只有顏色
+                      for (const color of colors) {
+                          const variant = initialProduct.variants?.find(
+                              (v) => v.color === color
+                          );
+                          stocks.push({
+                              color,
+                              sizes: [
+                                  {
+                                      size: '-',
+                                      stock: String(variant?.stock || 0)
+                                  }
+                              ]
+                          });
+                      }
+                  } else if (sizes.length > 0) {
+                      // 只有尺寸
+                      stocks.push({
+                          color: '-',
+                          sizes: sizes.map((size) => {
+                              const variant = initialProduct.variants?.find(
+                                  (v) => v.size === size
+                              );
+                              return {
+                                  size,
+                                  stock: String(variant?.stock || 0)
+                              };
+                          })
+                      });
+                  }
+                  return stocks;
+              })()
             : []
     };
 

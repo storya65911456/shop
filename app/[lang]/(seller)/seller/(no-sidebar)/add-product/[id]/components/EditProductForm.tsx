@@ -12,6 +12,15 @@ interface Variation {
     options: string[];
 }
 
+// 添加必要的類型定義
+interface VariationCombination {
+    color: string;
+    sizes: {
+        size: string;
+        stock: string;
+    }[];
+}
+
 export function EditProductForm() {
     const { productData, updateProductData, checklist, originalProduct } =
         useEditProduct();
@@ -35,6 +44,24 @@ export function EditProductForm() {
             alert(result.error);
         } else {
             router.push('/seller/my-product');
+        }
+    };
+
+    // 處理規格變更
+    const handleVariationsChange = (variations: Variation[], combinations?: any) => {
+        // 更新規格
+        updateProductData('variations', variations);
+
+        // 如果沒有新的組合數據，則根據現有規格生成新的組合
+        if (!combinations) {
+            const newCombinations = generateCombinations(
+                variations,
+                '0',
+                productData.variationStocks // 傳入現有的庫存數據
+            );
+            updateProductData('variationStocks', newCombinations);
+        } else {
+            updateProductData('variationStocks', combinations);
         }
     };
 
@@ -81,17 +108,15 @@ export function EditProductForm() {
             <div className='bg-black p-6 rounded-lg shadow'>
                 <h2 className='text-xl font-semibold mb-4'>規格與庫存</h2>
                 <VariationSelector
+                    mode='edit'
                     variations={productData.variations}
-                    onVariationsChange={(variations: Variation[]) =>
-                        updateProductData('variations', variations)
-                    }
+                    onVariationsChange={handleVariationsChange}
                     defaultStock={productData.stock}
-                    onStockChange={(stock: string) => updateProductData('stock', stock)}
+                    onStockChange={(stock) => updateProductData('stock', stock)}
                     variationStocks={productData.variationStocks}
-                    onVariationStocksChange={(stocks: {
-                        color: string;
-                        sizes: { size: string; stock: string }[];
-                    }[]) => updateProductData('variationStocks', stocks)}
+                    onVariationStocksChange={(stocks) => {
+                        updateProductData('variationStocks', stocks);
+                    }}
                 />
             </div>
 
@@ -128,3 +153,57 @@ export function EditProductForm() {
         </form>
     );
 }
+
+// 生成庫存組合的輔助函數
+const generateCombinations = (
+    variations: Variation[],
+    defaultStock: string,
+    existingStocks: VariationCombination[] = []
+): VariationCombination[] => {
+    const colorVariation = variations.find((v) => v.name === '顏色');
+    const sizeVariation = variations.find((v) => v.name === '尺寸');
+
+    let result: VariationCombination[] = [];
+
+    // 輔助函數：查找現有庫存
+    const findExistingStock = (color: string, size: string): string => {
+        const colorStock = existingStocks.find(s => s.color === color);
+        if (colorStock) {
+            const sizeStock = colorStock.sizes.find(s => s.size === size);
+            if (sizeStock) {
+                return sizeStock.stock;
+            }
+        }
+        return defaultStock;
+    };
+
+    if (sizeVariation?.options.length && !colorVariation?.options.length) {
+        result = [
+            {
+                color: '-',
+                sizes: sizeVariation.options.map((size) => ({
+                    size,
+                    stock: findExistingStock('-', size)
+                }))
+            }
+        ];
+    } else if (colorVariation?.options.length && !sizeVariation?.options.length) {
+        result = colorVariation.options.map((color) => ({
+            color,
+            sizes: [{ 
+                size: '-', 
+                stock: findExistingStock(color, '-')
+            }]
+        }));
+    } else if (colorVariation?.options.length && sizeVariation?.options.length) {
+        result = colorVariation.options.map((color) => ({
+            color,
+            sizes: sizeVariation.options.map((size) => ({
+                size,
+                stock: findExistingStock(color, size)
+            }))
+        }));
+    }
+
+    return result;
+};

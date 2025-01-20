@@ -1,117 +1,169 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { FaChevronDown, FaPlus, FaTrash } from 'react-icons/fa6';
 
+// 規格類型定義
 export interface Variation {
-    name: string;
-    options: string[];
+    name: string;      // 規格名稱（顏色/尺寸）
+    options: string[]; // 規格選項列表
 }
 
+// 規格組合類型定義
 export interface VariationCombination {
-    color: string;
-    sizes: {
-        size: string;
-        stock: string;
+    color: string;     // 顏色選項
+    sizes: {          // 尺寸和庫存組合
+        size: string;  // 尺寸選項
+        stock: string; // 庫存數量
     }[];
 }
 
+// 組件 Props 類型定義
 interface VariationSelectorProps {
-    variations: Variation[];
-    onVariationsChange: (
+    mode: 'add' | 'edit';  // 組件模式：新增或編輯
+    variations: Variation[]; // 規格列表
+    onVariationsChange: (   // 規格變更回調
         variations: Variation[],
         combinations?: VariationCombination[]
     ) => void;
-    defaultStock?: string;
-    onStockChange: (stock: string) => void;
-    variationStocks: {
-        color: string;
-        sizes: {
-            size: string;
-            stock: string;
-        }[];
-    }[];
-    onVariationStocksChange: (
-        stocks: {
-            color: string;
-            sizes: {
-                size: string;
-                stock: string;
-            }[];
-        }[]
-    ) => void;
+    defaultStock?: string;  // 默認庫存數量
+    onStockChange?: (stock: string) => void; // 庫存變更回調
+    variationStocks?: VariationCombination[]; // 現有庫存數據
+    onVariationStocksChange?: (stocks: VariationCombination[]) => void; // 庫存變更回調
 }
 
+// 可選的規格類型
 const VARIATION_TYPES = [
     { value: 'color', label: '顏色' },
     { value: 'size', label: '尺寸' }
 ];
 
+// 生成庫存組合的輔助函數
+const generateCombinations = (
+    variations: Variation[],
+    defaultStock: string
+): VariationCombination[] => {
+    const colorVariation = variations.find((v) => v.name === '顏色');
+    const sizeVariation = variations.find((v) => v.name === '尺寸');
+
+    let result: VariationCombination[] = [];
+
+    if (sizeVariation?.options.length && !colorVariation?.options.length) {
+        result = [
+            {
+                color: '-',
+                sizes: sizeVariation.options.map((size) => ({
+                    size,
+                    stock: defaultStock
+                }))
+            }
+        ];
+    } else if (colorVariation?.options.length && !sizeVariation?.options.length) {
+        result = colorVariation.options.map((color) => ({
+            color,
+            sizes: [{ size: '-', stock: defaultStock }]
+        }));
+    } else if (colorVariation?.options.length && sizeVariation?.options.length) {
+        result = colorVariation.options.map((color) => ({
+            color,
+            sizes: sizeVariation.options.map((size) => ({
+                size,
+                stock: defaultStock
+            }))
+        }));
+    }
+
+    return result;
+};
+
 export function VariationSelector({
+    mode,
     variations,
     onVariationsChange,
     defaultStock = '0',
     onStockChange,
-    variationStocks,
+    variationStocks = [],
     onVariationStocksChange
 }: VariationSelectorProps) {
-    const [isOpen, setIsOpen] = useState<number | null>(null);
-    const [newOption, setNewOption] = useState('');
-    const [combinations, setCombinations] = useState<VariationCombination[]>([]);
-    const dropdownRef = useRef<HTMLDivElement>(null);
+    // 狀態管理
+    const [isOpen, setIsOpen] = useState<number | null>(null);  // 下拉選單開關狀態
+    const [newOption, setNewOption] = useState('');  // 新選項輸入值
+    const [localStocks, setLocalStocks] = useState<VariationCombination[]>(variationStocks);  // 本地庫存管理
+    const dropdownRef = useRef<HTMLDivElement>(null);  // 下拉選單引用
 
-    // 生成規格組合
+    // 初始化庫存數據
     useEffect(() => {
-        const generateCombinations = () => {
-            const colorVariation = variations.find((v) => v.name === '顏色');
-            const sizeVariation = variations.find((v) => v.name === '尺寸');
+        if (mode === 'edit') {
+            setLocalStocks(variationStocks);
+        }
+    }, []);
 
-            // 如果沒有任何規格，返回空數組
-            if (!sizeVariation?.options.length && !colorVariation?.options.length) {
-                return [];
-            }
+    // 新增規格
+    const addVariation = () => {
+        if (variations.length >= 2) return;  // 最多兩個規格
+        onVariationsChange([...variations, { name: '', options: [] }]);
+    };
 
-            let result: VariationCombination[] = [];
+    // 移除規格
+    const removeVariation = (index: number) => {
+        const newVariations = variations.filter((_, i) => i !== index);
+        onVariationsChange(newVariations);
+    };
 
-            // 如果只有尺寸規格
-            if (sizeVariation?.options.length && !colorVariation?.options.length) {
-                result = [
-                    {
-                        color: '-',
-                        sizes: sizeVariation.options.map((size) => ({
-                            size,
-                            stock: '0'
-                        }))
-                    }
-                ];
-            }
-            // 如果只有顏色規格
-            else if (colorVariation?.options.length && !sizeVariation?.options.length) {
-                result = colorVariation.options.map((color) => ({
-                    color,
-                    sizes: [{ size: '-', stock: '0' }]
-                }));
-            }
-            // 如果同時有顏色和尺寸規格
-            else if (colorVariation?.options.length && sizeVariation?.options.length) {
-                result = colorVariation.options.map((color) => ({
-                    color,
-                    sizes: sizeVariation.options.map((size) => ({
-                        size,
-                        stock: '0'
-                    }))
-                }));
-            }
+    // 更新規格名稱
+    const updateVariationName = (index: number, name: string) => {
+        const exists = variations.some((v, i) => i !== index && v.name === name);
+        if (exists) return;  // 避免重複規格名稱
 
-            return result;
-        };
+        const newVariations = [...variations];
+        newVariations[index] = { name, options: [] };
+        onVariationsChange(newVariations);
+    };
 
-        const newCombinations = generateCombinations();
-        setCombinations(newCombinations);
-        onVariationsChange(variations, newCombinations);
-    }, [variations]);
+    // 更新庫存數量
+    const handleStockChange = (colorIndex: number, sizeIndex: number, value: string) => {
+        const newStocks = [...localStocks];
+        newStocks[colorIndex].sizes[sizeIndex].stock = value;
+        setLocalStocks(newStocks);
+        
+        if (mode === 'edit') {
+            onVariationStocksChange?.(newStocks);
+        }
+    };
 
-    // 處理點擊外部關閉
+    // 新增規格選項
+    const addOption = (variationIndex: number) => {
+        if (!newOption.trim()) return;
+
+        const newVariations = [...variations];
+        if (newVariations[variationIndex].options.includes(newOption.trim())) {
+            setNewOption('');
+            return;  // 避免重複選項
+        }
+
+        newVariations[variationIndex].options.push(newOption.trim());
+        onVariationsChange(newVariations);
+        setNewOption('');
+
+        // 生成新的庫存組合
+        const newCombinations = generateCombinations(newVariations, defaultStock);
+        setLocalStocks(newCombinations);
+    };
+
+    // 移除規格選項
+    const removeOption = (variationIndex: number, optionIndex: number) => {
+        const newVariations = [...variations];
+        newVariations[variationIndex].options = newVariations[
+            variationIndex
+        ].options.filter((_, i) => i !== optionIndex);
+        onVariationsChange(newVariations);
+
+        // 重新生成庫存組合
+        const newCombinations = generateCombinations(newVariations, defaultStock);
+        setLocalStocks(newCombinations);
+    };
+
+    // 處理點擊外部關閉下拉選單
     useEffect(() => {
         const handleClickOutside = (event: MouseEvent) => {
             if (
@@ -128,50 +180,7 @@ export function VariationSelector({
         };
     }, []);
 
-    const addVariation = () => {
-        if (variations.length >= 2) return;
-        onVariationsChange([...variations, { name: '', options: [] }]);
-    };
-
-    const removeVariation = (index: number) => {
-        const newVariations = variations.filter((_, i) => i !== index);
-        onVariationsChange(newVariations);
-    };
-
-    const updateVariationName = (index: number, name: string) => {
-        // 檢查是否已經有相同類型的規格
-        const exists = variations.some((v, i) => i !== index && v.name === name);
-        if (exists) return;
-
-        const newVariations = [...variations];
-        newVariations[index] = { name, options: [] }; // 重置選項
-        onVariationsChange(newVariations);
-        setIsOpen(null);
-    };
-
-    const addOption = (variationIndex: number) => {
-        if (!newOption.trim()) return;
-
-        const newVariations = [...variations];
-        // 檢查選項是否已存在
-        if (newVariations[variationIndex].options.includes(newOption.trim())) {
-            setNewOption('');
-            return;
-        }
-
-        newVariations[variationIndex].options.push(newOption.trim());
-        onVariationsChange(newVariations);
-        setNewOption('');
-    };
-
-    // 處理庫存數量變更
-    const handleStockChange = (colorIndex: number, sizeIndex: number, value: string) => {
-        const newCombinations = [...combinations];
-        newCombinations[colorIndex].sizes[sizeIndex].stock = value;
-        setCombinations(newCombinations);
-        onVariationsChange(variations, newCombinations);
-    };
-
+    // 渲染組件
     return (
         <div className='space-y-8'>
             {variations.map((variation, variationIndex) => (
@@ -265,14 +274,7 @@ export function VariationSelector({
                                         <button
                                             type='button'
                                             onClick={() => {
-                                                const newVariations = [...variations];
-                                                newVariations[variationIndex].options =
-                                                    newVariations[
-                                                        variationIndex
-                                                    ].options.filter(
-                                                        (_, i) => i !== optionIndex
-                                                    );
-                                                onVariationsChange(newVariations);
+                                                removeOption(variationIndex, optionIndex);
                                             }}
                                             className='text-gray-400 hover:text-[#ee4d2d]'
                                         >
@@ -323,8 +325,7 @@ export function VariationSelector({
             )}
 
             {/* 規格組合表格 */}
-            {(combinations.length > 0 ||
-                variations.some((v) => v.name === '尺寸' && v.options.length > 0)) && (
+            {variations.some((v) => v.options.length > 0) && (
                 <div className='overflow-x-auto'>
                     <table className='w-full border-collapse'>
                         <thead>
@@ -344,8 +345,8 @@ export function VariationSelector({
                             </tr>
                         </thead>
                         <tbody>
-                            {combinations.map((combination, colorIndex) => (
-                                <>
+                            {localStocks.map((combination, colorIndex) => (
+                                <React.Fragment key={colorIndex}>
                                     {combination.sizes.map((sizeOption, sizeIndex) => (
                                         <tr
                                             key={`${colorIndex}-${sizeIndex}`}
@@ -379,7 +380,7 @@ export function VariationSelector({
                                             </td>
                                         </tr>
                                     ))}
-                                </>
+                                </React.Fragment>
                             ))}
                         </tbody>
                     </table>

@@ -5,28 +5,30 @@ import { FaChevronDown, FaPlus, FaTrash } from 'react-icons/fa6';
 
 // 規格類型定義
 export interface Variation {
-    name: string;      // 規格名稱（顏色/尺寸）
+    name: string; // 規格名稱（顏色/尺寸）
     options: string[]; // 規格選項列表
 }
 
 // 規格組合類型定義
 export interface VariationCombination {
-    color: string;     // 顏色選項
-    sizes: {          // 尺寸和庫存組合
-        size: string;  // 尺寸選項
+    color: string; // 顏色選項
+    sizes: {
+        // 尺寸和庫存組合
+        size: string; // 尺寸選項
         stock: string; // 庫存數量
     }[];
 }
 
 // 組件 Props 類型定義
 interface VariationSelectorProps {
-    mode: 'add' | 'edit';  // 組件模式：新增或編輯
+    mode: 'add' | 'edit'; // 組件模式：新增或編輯
     variations: Variation[]; // 規格列表
-    onVariationsChange: (   // 規格變更回調
+    onVariationsChange: (
+        // 規格變更回調
         variations: Variation[],
         combinations?: VariationCombination[]
     ) => void;
-    defaultStock?: string;  // 默認庫存數量
+    defaultStock?: string; // 默認庫存數量
     onStockChange?: (stock: string) => void; // 庫存變更回調
     variationStocks?: VariationCombination[]; // 現有庫存數據
     onVariationStocksChange?: (stocks: VariationCombination[]) => void; // 庫存變更回調
@@ -86,10 +88,11 @@ export function VariationSelector({
     onVariationStocksChange
 }: VariationSelectorProps) {
     // 狀態管理
-    const [isOpen, setIsOpen] = useState<number | null>(null);  // 下拉選單開關狀態
-    const [newOption, setNewOption] = useState('');  // 新選項輸入值
-    const [localStocks, setLocalStocks] = useState<VariationCombination[]>(variationStocks);  // 本地庫存管理
-    const dropdownRef = useRef<HTMLDivElement>(null);  // 下拉選單引用
+    const [isOpen, setIsOpen] = useState<number | null>(null); // 下拉選單開關狀態
+    const [newOption, setNewOption] = useState(''); // 新選項輸入值
+    const [localStocks, setLocalStocks] =
+        useState<VariationCombination[]>(variationStocks); // 本地庫存管理
+    const dropdownRef = useRef<HTMLDivElement>(null); // 下拉選單引用
 
     // 初始化庫存數據
     useEffect(() => {
@@ -100,7 +103,7 @@ export function VariationSelector({
 
     // 新增規格
     const addVariation = () => {
-        if (variations.length >= 2) return;  // 最多兩個規格
+        if (variations.length >= 2) return; // 最多兩個規格
         onVariationsChange([...variations, { name: '', options: [] }]);
     };
 
@@ -113,7 +116,7 @@ export function VariationSelector({
     // 更新規格名稱
     const updateVariationName = (index: number, name: string) => {
         const exists = variations.some((v, i) => i !== index && v.name === name);
-        if (exists) return;  // 避免重複規格名稱
+        if (exists) return; // 避免重複規格名稱
 
         const newVariations = [...variations];
         newVariations[index] = { name, options: [] };
@@ -125,7 +128,7 @@ export function VariationSelector({
         const newStocks = [...localStocks];
         newStocks[colorIndex].sizes[sizeIndex].stock = value;
         setLocalStocks(newStocks);
-        
+
         if (mode === 'edit') {
             onVariationStocksChange?.(newStocks);
         }
@@ -138,7 +141,7 @@ export function VariationSelector({
         const newVariations = [...variations];
         if (newVariations[variationIndex].options.includes(newOption.trim())) {
             setNewOption('');
-            return;  // 避免重複選項
+            return; // 避免重複選項
         }
 
         newVariations[variationIndex].options.push(newOption.trim());

@@ -1,11 +1,11 @@
 'use client';
 
 import { addProductActions } from '@/actions/add-products';
-import { CategorySelector } from '@/components/Seller/CategorySelector';
 import {
     Variation,
     VariationSelector
 } from '@/app/[lang]/(seller)/seller/(no-sidebar)/add-product/components/VariationSelector';
+import { CategorySelector } from '@/components/Seller/CategorySelector';
 import Image from 'next/image';
 import { useActionState, useEffect, useState } from 'react';
 import { FaTrash } from 'react-icons/fa6';
@@ -303,7 +303,9 @@ export default function AddProductPage() {
                     {/* 右邊 */}
                     <div className='w-[700px]'>
                         <VariationSelector
+                            mode='add'
                             variations={productData.variations}
+                            variationStocks={productData.variationStocks}
                             onVariationsChange={(variations, combinations) => {
                                 updateProductData('variations', variations);
                                 if (combinations) {
@@ -437,6 +439,7 @@ export default function AddProductPage() {
                     value={JSON.stringify(productData.variationStocks)}
                 />
             )}
+            {/* {console.log('productData.variationStocks', productData.variationStocks)} */}
         </form>
     );
 }

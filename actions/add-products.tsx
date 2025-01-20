@@ -45,7 +45,7 @@ export const addProductActions = async (state: ActionState, formData: FormData) 
         if (!price) {
             return { error: '請輸入商品價格' };
         }
-
+        console.log('variationStocks', variationStocks);
         // 庫存驗證
         if (
             (!stock || isNaN(parseInt(stock)) || parseInt(stock) <= 0) &&

@@ -7,7 +7,8 @@ import {
 } from '@/app/[lang]/(seller)/seller/(no-sidebar)/add-product/components/VariationSelector';
 import { CategorySelector } from '@/components/Seller/CategorySelector';
 import Image from 'next/image';
-import { useActionState, useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
+import { useActionState, useEffect, useState, useTransition } from 'react';
 import { FaTrash } from 'react-icons/fa6';
 import { useAddProduct } from './contexts/AddProductContext';
 
@@ -22,9 +23,9 @@ const sections = [
 export default function AddProductPage() {
     const { productData, updateProductData, validateField } = useAddProduct();
     const [activeSection, setActiveSection] = useState('basic');
-    const [state, formAction] = useActionState(addProductActions, {
-        error: ''
-    });
+
+    const [isPending, startTransition] = useTransition();
+    const router = useRouter();
     // 監聽滾動區塊
     useEffect(() => {
         const observer = new IntersectionObserver(
@@ -82,16 +83,48 @@ export default function AddProductPage() {
         // 處理取消邏輯
     };
 
-    useEffect(() => {
-        if (state && typeof state === 'object' && 'error' in state && state.error) {
-            alert(state.error);
-        } else if (state && typeof state === 'object' && 'success' in state) {
-            alert('提交成功');
+    const handleSubmit = async (e: React.FormEvent) => {
+        e.preventDefault();
+
+        const formData = new FormData();
+        formData.append('title', productData.title);
+        formData.append('description', productData.description);
+        formData.append('price', productData.price);
+        formData.append('categories', JSON.stringify(productData.categories));
+        formData.append('variations', JSON.stringify(productData.variations));
+        formData.append('stock', productData.stock);
+        formData.append('discount_percent', productData.discount_percent);
+
+        if (productData.variations.length > 0) {
+            formData.append(
+                'variationStocks',
+                JSON.stringify(productData.variationStocks)
+            );
         }
-    }, [state]);
+        console.log('formData', productData.variationStocks);
+
+        startTransition(async () => {
+            try {
+                const result = await addProductActions(formData);
+                if (result.error) {
+                    alert(result.error);
+                } else {
+                    alert('提交成功');
+                    router.push('/seller/my-product');
+                }
+            } catch (error) {
+                alert('提交失敗，請稍後再試');
+            }
+        });
+    };
+
+    // 添加監聽來檢查數據變化
+    useEffect(() => {
+        console.log('variationStocks updated:', productData.variationStocks);
+    }, [productData.variationStocks]);
 
     return (
-        <form action={formAction} className='space-y-6 min-w-[1000px]'>
+        <form onSubmit={handleSubmit} className='space-y-6 min-w-[1000px]'>
             {/* 導覽列 */}
             <nav className='sticky top-0 bg-black z-10 border-b shadow-md rounded-sm shadow-orange'>
                 <div className='flex gap-4 text-white'>
@@ -295,23 +328,33 @@ export default function AddProductPage() {
 
                 {/* 商品規格選擇區 */}
                 <div className='mb-6 flex flex-row gap-4'>
-                    {/* 左邊 */}
                     <div className='flex items-start justify-end mb-2 w-[150px]'>
                         <span className='text-red-500 mr-1'>*</span>
                         <span>商品規格</span>
                     </div>
-                    {/* 右邊 */}
                     <div className='w-[700px]'>
                         <VariationSelector
                             mode='add'
                             variations={productData.variations}
                             variationStocks={productData.variationStocks}
                             onVariationsChange={(variations, combinations) => {
+                                console.log('onVariationsChange:', {
+                                    variations,
+                                    combinations
+                                });
                                 updateProductData('variations', variations);
                                 if (combinations) {
                                     updateProductData('variationStocks', combinations);
                                 }
                             }}
+                            onVariationStocksChange={(stocks) => {
+                                console.log('onVariationStocksChange:', stocks);
+                                updateProductData('variationStocks', stocks);
+                            }}
+                            onStockChange={(stock) => {
+                                updateProductData('stock', stock);
+                            }}
+                            defaultStock='0'
                         />
                     </div>
                 </div>
@@ -368,7 +411,49 @@ export default function AddProductPage() {
                     </div>
                 </div>
 
-                {/* 銷售資訊表單內容 */}
+                {/* 打折設定 */}
+                <div className='mb-6 flex flex-row gap-4'>
+                    {/* 左邊 */}
+                    <div className='flex items-center justify-end mb-2 w-[150px]'>
+                        <span>折扣</span>
+                    </div>
+                    {/* 右邊 */}
+                    <div className='w-[700px] flex flex-col gap-2'>
+                        <div className='flex items-center gap-2'>
+                            <input
+                                type='number'
+                                name='discount_percent'
+                                value={productData.discount_percent}
+                                onChange={(e) => {
+                                    const value = Math.min(
+                                        100,
+                                        Math.max(0, Number(e.target.value))
+                                    );
+                                    updateProductData(
+                                        'discount_percent',
+                                        value.toString()
+                                    );
+                                }}
+                                className='w-[100px] bg-gray-200/20 p-2 border rounded-md focus:outline-none focus:border-[#ee4d2d]'
+                                placeholder='0-100'
+                                min='0'
+                                max='100'
+                            />
+                            <span>%</span>
+                            {productData.price &&
+                                productData.discount_percent !== '100' && (
+                                    <div className='ml-4 text-orange'>
+                                        折扣後價格：$
+                                        {Math.round(
+                                            (Number(productData.price) *
+                                                Number(productData.discount_percent)) /
+                                                100
+                                        )}
+                                    </div>
+                                )}
+                        </div>
+                    </div>
+                </div>
             </div>
 
             {/* 運費區塊 */}
@@ -398,6 +483,7 @@ export default function AddProductPage() {
                         type='button'
                         onClick={handleCancel}
                         className='p-2 text-gray-400 hover:text-gray-200 transition-colors duration-200'
+                        disabled={isPending}
                     >
                         取消
                     </button>
@@ -408,38 +494,19 @@ export default function AddProductPage() {
                             // 處理儲存並下架邏輯
                         }}
                         className='p-2 text-gray-400 hover:text-gray-200 transition-colors duration-200'
+                        disabled={isPending}
                     >
                         儲存並下架
                     </button>
                     <button
                         type='submit'
                         className='p-2 bg-[#ee4d2d] text-white rounded-sm hover:bg-[#ff6b4d] transition-colors duration-200'
+                        disabled={isPending}
                     >
-                        儲存並上架
+                        {isPending ? '處理中...' : '儲存並上架'}
                     </button>
                 </div>
             </div>
-
-            {/* 添加隱藏的輸入欄位，用於傳遞 JSON 資料 */}
-            <input
-                type='hidden'
-                name='categories'
-                value={JSON.stringify(productData.categories)}
-            />
-            <input
-                type='hidden'
-                name='variations'
-                value={JSON.stringify(productData.variations)}
-            />
-
-            {productData.variationStocks && (
-                <input
-                    type='hidden'
-                    name='variationStocks'
-                    value={JSON.stringify(productData.variationStocks)}
-                />
-            )}
-            {/* {console.log('productData.variationStocks', productData.variationStocks)} */}
         </form>
     );
 }

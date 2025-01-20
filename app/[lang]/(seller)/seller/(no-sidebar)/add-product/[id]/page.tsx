@@ -27,6 +27,7 @@ export default async ({
     if (product.seller_id !== Number(user.id)) {
         return <div>無權限編輯此商品</div>;
     }
+    console.log(product);
 
     return (
         <div className='w-full min-h-screen bg-gray-100/20 p-6'>

@@ -24,6 +24,7 @@ export async function updateProductAction(formData: FormData) {
         const stock = formData.get('stock') as string;
         const variations = JSON.parse(formData.get('variations') as string);
         const variationStocks = JSON.parse(formData.get('variationStocks') as string);
+        const discount_percent = formData.get('discount_percent') as string;
 
         if (!productId) {
             return { error: '商品ID不存在' };
@@ -42,7 +43,13 @@ export async function updateProductAction(formData: FormData) {
         if (!price) {
             return { error: '請輸入商品價格' };
         }
-
+        if (
+            discount_percent &&
+            (Number(discount_percent) < 0 || Number(discount_percent) > 100)
+        ) {
+            return { error: '折扣百分比需介於 0~100 之間' };
+        }
+        console.log(discount_percent);
         // 開始資料庫交易
         const transaction = db.transaction(() => {
             // 更新商品基本資料
@@ -53,7 +60,8 @@ export async function updateProductAction(formData: FormData) {
                     name = ?,
                     description = ?,
                     price = ?,
-                    has_variants = ?
+                    has_variants = ?,
+                    discount_percent = ?
                 WHERE id = ? AND seller_id = ?
             `
             ).run(
@@ -61,6 +69,7 @@ export async function updateProductAction(formData: FormData) {
                 description,
                 parseFloat(price),
                 variations.length > 0 ? 1 : 0,
+                Number(discount_percent),
                 Number(productId),
                 Number(user.id)
             );

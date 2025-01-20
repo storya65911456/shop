@@ -30,8 +30,8 @@ interface VariationSelectorProps {
     ) => void;
     defaultStock?: string; // 默認庫存數量
     onStockChange?: (stock: string) => void; // 庫存變更回調
-    variationStocks?: VariationCombination[]; // 現有庫存數據
-    onVariationStocksChange?: (stocks: VariationCombination[]) => void; // 庫存變更回調
+    variationStocks: VariationCombination[]; // 現有庫存數據
+    onVariationStocksChange: (stocks: VariationCombination[]) => void; // 庫存變更回調
 }
 
 // 可選的規格類型
@@ -84,7 +84,7 @@ export function VariationSelector({
     onVariationsChange,
     defaultStock = '0',
     onStockChange,
-    variationStocks = [],
+    variationStocks,
     onVariationStocksChange
 }: VariationSelectorProps) {
     // 狀態管理
@@ -128,10 +128,7 @@ export function VariationSelector({
         const newStocks = [...localStocks];
         newStocks[colorIndex].sizes[sizeIndex].stock = value;
         setLocalStocks(newStocks);
-
-        if (mode === 'edit') {
-            onVariationStocksChange?.(newStocks);
-        }
+        onVariationStocksChange(newStocks);
     };
 
     // 新增規格選項
@@ -151,6 +148,7 @@ export function VariationSelector({
         // 生成新的庫存組合
         const newCombinations = generateCombinations(newVariations, defaultStock);
         setLocalStocks(newCombinations);
+        onVariationStocksChange(newCombinations);
     };
 
     // 移除規格選項
@@ -164,6 +162,7 @@ export function VariationSelector({
         // 重新生成庫存組合
         const newCombinations = generateCombinations(newVariations, defaultStock);
         setLocalStocks(newCombinations);
+        onVariationStocksChange(newCombinations);
     };
 
     // 處理點擊外部關閉下拉選單
@@ -182,6 +181,15 @@ export function VariationSelector({
             document.removeEventListener('mousedown', handleClickOutside);
         };
     }, []);
+
+    // 監聽 variations 變化
+    useEffect(() => {
+        if (variations.length > 0) {
+            const newCombinations = generateCombinations(variations, defaultStock);
+            setLocalStocks(newCombinations);
+            onVariationStocksChange(newCombinations);
+        }
+    }, [variations, defaultStock]);
 
     // 渲染組件
     return (

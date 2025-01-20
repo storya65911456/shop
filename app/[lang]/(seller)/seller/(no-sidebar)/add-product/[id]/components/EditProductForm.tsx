@@ -22,8 +22,7 @@ interface VariationCombination {
 }
 
 export function EditProductForm() {
-    const { productData, updateProductData, checklist, originalProduct } =
-        useEditProduct();
+    const { productData, updateProductData, originalProduct } = useEditProduct();
     const router = useRouter();
 
     const handleSubmit = async (e: React.FormEvent) => {
@@ -38,6 +37,7 @@ export function EditProductForm() {
         formData.append('variations', JSON.stringify(productData.variations));
         formData.append('stock', productData.stock);
         formData.append('variationStocks', JSON.stringify(productData.variationStocks));
+        formData.append('discount_percent', productData.discount_percent);
 
         const result = await updateProductAction(formData);
         if (result.error) {
@@ -133,6 +133,38 @@ export function EditProductForm() {
                     />
                 </div>
             </div>
+            {/* 折扣 */}
+            <div className='bg-black p-6 rounded-lg shadow'>
+                <h2 className='text-xl font-semibold mb-4'>折扣</h2>
+                <div className='flex items-center gap-2'>
+                    <input
+                        type='number'
+                        placeholder='0-100'
+                        min='0'
+                        max='100'
+                        value={productData.discount_percent}
+                        onChange={(e) => {
+                            const value = Math.min(
+                                100,
+                                Math.max(0, Number(e.target.value))
+                            );
+                            updateProductData('discount_percent', value.toString());
+                        }}
+                        className='w-32 p-2 bg-gray-800 rounded'
+                    />
+                    <span>%</span>
+                    {productData.price && productData.discount_percent !== '100' && (
+                        <div className='ml-4 text-orange'>
+                            折扣後價格：$
+                            {Math.round(
+                                (Number(productData.price) *
+                                    Number(productData.discount_percent)) /
+                                    100
+                            )}
+                        </div>
+                    )}
+                </div>
+            </div>
 
             {/* 提交按鈕 */}
             <div className='flex justify-end gap-4'>
@@ -167,9 +199,9 @@ const generateCombinations = (
 
     // 輔助函數：查找現有庫存
     const findExistingStock = (color: string, size: string): string => {
-        const colorStock = existingStocks.find(s => s.color === color);
+        const colorStock = existingStocks.find((s) => s.color === color);
         if (colorStock) {
-            const sizeStock = colorStock.sizes.find(s => s.size === size);
+            const sizeStock = colorStock.sizes.find((s) => s.size === size);
             if (sizeStock) {
                 return sizeStock.stock;
             }
@@ -190,10 +222,12 @@ const generateCombinations = (
     } else if (colorVariation?.options.length && !sizeVariation?.options.length) {
         result = colorVariation.options.map((color) => ({
             color,
-            sizes: [{ 
-                size: '-', 
-                stock: findExistingStock(color, '-')
-            }]
+            sizes: [
+                {
+                    size: '-',
+                    stock: findExistingStock(color, '-')
+                }
+            ]
         }));
     } else if (colorVariation?.options.length && sizeVariation?.options.length) {
         result = colorVariation.options.map((color) => ({

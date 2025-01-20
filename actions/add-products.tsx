@@ -1,83 +1,65 @@
 'use server';
 
-import { db } from '@/db/db';
 import { verifyAuth } from '@/lib/auth';
 import { createProduct } from '@/lib/create-product';
 import { revalidatePath } from 'next/cache';
-import { cookies } from 'next/headers';
-
-interface VariationStock {
-    color: string;
-    sizes: {
-        size: string;
-        stock: string;
-    }[];
-}
 
 interface ActionState {
     error?: string;
     success?: boolean;
 }
 
-export const addProductActions = async (state: ActionState, formData: FormData) => {
-    const { user } = await verifyAuth();
+export async function addProductActions(formData: FormData): Promise<ActionState> {
     try {
+        const { user } = await verifyAuth();
+        if (!user) {
+            return { error: '請先登入' };
+        }
+
         const title = formData.get('title') as string;
         const description = formData.get('description') as string;
-        const categories = JSON.parse(formData.get('categories') as string);
         const price = formData.get('price') as string;
-        const stock = formData.get('stock') as string;
+        const discount_percent = formData.get('discount_percent') as string;
+        const categories = JSON.parse(formData.get('categories') as string);
         const variations = JSON.parse(formData.get('variations') as string);
-        const variationStocks = formData.get('variationStocks')
-            ? (JSON.parse(formData.get('variationStocks') as string) as VariationStock[])
-            : null;
+        const stock = formData.get('stock') as string;
 
-        // 基本驗證
-        if (title.length < 5 || title.length > 100) {
-            return { error: '商品名稱字數需介於 5~100 字之間' };
-        }
-        if (categories.length === 0) {
-            return { error: '請選擇商品類別' };
-        }
-        if (description.length < 20) {
-            return { error: '商品描述需填入至少 20 個文字' };
-        }
-        if (!price) {
-            return { error: '請輸入商品價格' };
-        }
-        console.log('variationStocks', variationStocks);
-        // 庫存驗證
-        if (
-            (!stock || isNaN(parseInt(stock)) || parseInt(stock) <= 0) &&
-            variationStocks?.length === 0
-        ) {
-            return { error: '請設定有效的庫存數量' };
+        let variationStocks = null;
+        const variationStocksData = formData.get('variationStocks');
+        if (variationStocksData) {
+            variationStocks = JSON.parse(variationStocksData as string);
         }
 
-        // 獲取用戶ID
-        const userId = user?.id;
-        if (!userId) {
-            return { error: '用戶ID不存在' };
+        // 驗證數據
+        if (!title || title.length < 5 || title.length > 100) {
+            return { error: '商品名稱需介於 5-100 字元之間' };
         }
-        // 創建商品
+        if (!description || description.length < 20) {
+            return { error: '商品描述至少需要 20 字元' };
+        }
+        if (!price || isNaN(Number(price))) {
+            return { error: '請輸入有效的價格' };
+        }
+        if (!categories || categories.length === 0) {
+            return { error: '請選擇商品分類' };
+        }
+
         await createProduct({
             title,
             description,
-            price: parseFloat(price),
+            price: Number(price),
+            discount_percent: Number(discount_percent),
             categories,
-            stock,
             variations,
+            stock,
             variationStocks,
-            userId: Number(userId)
+            userId: Number(user.id)
         });
 
-        // 重新驗證商品列表頁面
-        revalidatePath('/');
-        revalidatePath('/seller/products');
-
-        return { success: true, error: undefined };
+        revalidatePath('/seller/my-product');
+        return { success: true };
     } catch (error) {
-        console.error('提交失敗：', error);
-        return { error: '提交失敗，請稍後再試', success: undefined };
+        console.error('新增商品失敗:', error);
+        return { error: '新增失敗，請稍後再試' };
     }
-};
+}

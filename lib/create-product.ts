@@ -12,6 +12,7 @@ interface CreateProductData {
     title: string;
     description: string;
     price: number;
+    discount_percent: number;
     categories: string[];
     stock?: string;
     variations: any[];
@@ -23,6 +24,7 @@ export async function createProduct({
     title,
     description,
     price,
+    discount_percent,
     categories,
     stock,
     variations,
@@ -39,12 +41,20 @@ export async function createProduct({
                 name, 
                 description, 
                 price, 
+                discount_percent,
                 seller_id,
                 has_variants
-            ) VALUES (?, ?, ?, ?, ?)
+            ) VALUES (?, ?, ?, ?, ?, ?)
         `
             )
-            .run(title, description, price, userId, variations.length > 0 ? 1 : 0);
+            .run(
+                title,
+                description,
+                price,
+                discount_percent,
+                userId,
+                variations.length > 0 ? 1 : 0
+            );
 
         const productId = result.lastInsertRowid as number;
 

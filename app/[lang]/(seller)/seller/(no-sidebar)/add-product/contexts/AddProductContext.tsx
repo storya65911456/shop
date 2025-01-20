@@ -17,6 +17,7 @@ interface ProductData {
     variations: any[];
     stock: string;
     price: string;
+    discount_percent: string;
     variationStocks: {
         color: string;
         sizes: {
@@ -51,6 +52,7 @@ const initialProductData: ProductData = {
     variations: [],
     stock: '0',
     price: '',
+    discount_percent: '100',
     variationStocks: []
 };
 
@@ -117,7 +119,9 @@ export function AddProductProvider({ children }: { children: ReactNode }) {
     }, [productData.price]);
 
     const updateProductData = (field: keyof ProductData, value: any) => {
-        setProductData((prev) => ({ ...prev, [field]: value }));
+        setProductData((prev) => {
+            return { ...prev, [field]: value };
+        });
     };
 
     return (

@@ -1,7 +1,7 @@
 'use client';
 
 import { Product } from '@/lib/product';
-import { createContext, ReactNode, useContext, useState } from 'react';
+import { createContext, ReactNode, useContext, useEffect, useState } from 'react';
 
 interface ChecklistItem {
     id: string;
@@ -18,6 +18,7 @@ interface ProductData {
     variations: any[];
     stock: string;
     price: string;
+    discount_percent: string;
     variationStocks: {
         color: string;
         sizes: {
@@ -57,6 +58,7 @@ export function EditProductProvider({
         categories: initialProduct.categoryPath?.map((cat) => cat.name) || [],
         description: initialProduct.description,
         video: null,
+        discount_percent: initialProduct.discount_percent.toString(),
         variations: initialProduct.has_variants
             ? (() => {
                   const variations = [];
@@ -210,6 +212,28 @@ export function EditProductProvider({
     const updateProductData = (field: keyof ProductData, value: any) => {
         setProductData((prev) => ({ ...prev, [field]: value }));
     };
+
+    useEffect(() => {
+        validateField('images');
+    }, [productData.images]);
+
+    useEffect(() => {
+        validateField('title');
+    }, [productData.title]);
+
+    useEffect(() => {
+        if (productData.categories.length > 0) {
+            validateField('category');
+        }
+    }, [productData.categories]);
+
+    useEffect(() => {
+        validateField('description');
+    }, [productData.description]);
+
+    useEffect(() => {
+        validateField('price');
+    }, [productData.price]);
 
     return (
         <EditProductContext.Provider

@@ -4,7 +4,7 @@ import { Product, ProductVariant } from '@/lib/product';
 import { Review } from '@/lib/review';
 import freeShippingIcon from '@/public/images/free-shipping.png';
 import Image from 'next/image';
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { RatingStars } from './RatingStars';
 import { SizeSelector } from './SizeSelector';
 
@@ -22,14 +22,39 @@ export function ProductDetail({ product, reviews }: ProductDetailProps) {
     // 計算實際售價（四捨五入到整數）
     const actualPrice = Math.round((product.price * product.discount_percent) / 100);
 
-    // 獲取可用的尺寸和顏色
-    const sizes = [...new Set(product.variants?.map((v) => v.size).filter(Boolean))];
-    const colors = [...new Set(product.variants?.map((v) => v.color).filter(Boolean))];
+    // 獲取可用的尺寸和顏色，排除 '-' 值和 null，並確保類型安全
+    const sizes = [
+        ...new Set(
+            product.variants
+                ?.map((v) => v.size)
+                .filter((size): size is string => size !== null && size !== '-') || []
+        )
+    ];
+
+    const colors = [
+        ...new Set(
+            product.variants
+                ?.map((v) => v.color)
+                .filter((color): color is string => color !== null && color !== '-') || []
+        )
+    ];
 
     // 獲取當前選擇的變體庫存
     const currentVariant = product.variants?.find(
-        (v) => v.size === selectedSize && v.color === selectedColor
+        (v) =>
+            (sizes.length ? v.size === selectedSize : v.size === '-') &&
+            (colors.length ? v.color === selectedColor : v.color === '-')
     );
+
+    // 初始化選擇的尺寸和顏色
+    useEffect(() => {
+        if (sizes.length === 0) {
+            setSelectedSize('-');
+        }
+        if (colors.length === 0) {
+            setSelectedColor('-');
+        }
+    }, [sizes.length, colors.length]);
 
     // 計算每個星級的評價數量
     const ratingCounts = reviews.reduce((acc, review) => {
@@ -46,12 +71,6 @@ export function ProductDetail({ product, reviews }: ProductDetailProps) {
     const availableRatings = Object.keys(ratingCounts)
         .map(Number)
         .sort((a, b) => b - a);
-
-    // 在組件中添加一些調試信息
-    // console.log('Product ratings:', {
-    //     avg: product.rating_avg,
-    //     count: product.rating_count
-    // });
 
     // 處理數量變更
     const handleQuantityChange = (value: number) => {
@@ -172,7 +191,7 @@ export function ProductDetail({ product, reviews }: ProductDetailProps) {
                                 </div>
                             </div>
                         </div>
-                        {/* 顏色 */}
+                        {/* 只在有顏色選項時顯示顏色選擇器 */}
                         {colors.length > 0 && (
                             <div className='flex flex-row gap-5 items-start justify-start'>
                                 <h3 className='w-[100px]'>顏色</h3>
@@ -193,12 +212,12 @@ export function ProductDetail({ product, reviews }: ProductDetailProps) {
                                 </div>
                             </div>
                         )}
-                        {/* 尺寸 */}
+                        {/* 只在有尺寸選項時顯示尺寸選擇器 */}
                         {sizes.length > 0 && (
                             <div className='flex flex-row gap-5 items-start justify-start'>
                                 <h3 className='w-[100px]'>尺寸</h3>
                                 <SizeSelector
-                                    sizes={sizes as string[]}
+                                    sizes={sizes}
                                     selected={selectedSize}
                                     onChange={setSelectedSize}
                                 />
@@ -211,7 +230,11 @@ export function ProductDetail({ product, reviews }: ProductDetailProps) {
                                 currentVariant ? (
                                     <p>{currentVariant.stock}</p>
                                 ) : (
-                                    <p className='text-gray-500'>請選擇商品規格</p>
+                                    <p className='text-gray-500'>
+                                        {sizes.length > 0 || colors.length > 0
+                                            ? '請選擇商品規格'
+                                            : ''}
+                                    </p>
                                 )
                             ) : (
                                 <p>{product.variants?.[0]?.stock}</p>

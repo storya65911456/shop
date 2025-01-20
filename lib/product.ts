@@ -27,6 +27,7 @@ export interface Product {
     description: string;
     price: number;
     discount_percent: number;
+    stock: number;
     seller_id: number;
     has_variants: boolean;
     rating_avg: number;

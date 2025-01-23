@@ -12,6 +12,7 @@ import { FaFacebook } from 'react-icons/fa6';
 import { FiShoppingCart } from 'react-icons/fi';
 import { IoHelpCircleOutline } from 'react-icons/io5';
 import { LanguageDropdown } from '../LanguageDropdown';
+import { CartDropdown } from './CartDropdown';
 import { MyAccountDropdown } from './MyAccountDropdown';
 
 interface MainHeaderProps {
@@ -76,7 +77,7 @@ export const MainHeader = ({ lang, dict, user }: MainHeaderProps) => {
                     </Link>
                     {/* 搜尋欄 */}
                     <div className='flex-1 flex items-center justify-center'>
-                        <div className='relative flex bg-white pl-2 w-[80%] items-center justify-between rounded'>
+                        <div className='relative flex bg-white pl-2 w-[90%] items-center justify-between rounded'>
                             <input
                                 type='text'
                                 className='py-2 rounded-l-sm mr-4 outline-none w-full'
@@ -88,11 +89,12 @@ export const MainHeader = ({ lang, dict, user }: MainHeaderProps) => {
                         </div>
                     </div>
                     {/* 購物車 */}
-                    <div className='text-white'>
+                    {/* <div className='text-white'>
                         <Link href={`/${lang}/cart`}>
                             <FiShoppingCart className='text-2xl' />
                         </Link>
-                    </div>
+                    </div> */}
+                    <CartDropdown lang={lang} dict={dict} />
                 </div>
             </div>
         </header>
